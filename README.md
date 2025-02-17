@@ -28,6 +28,7 @@ Screenshots needed (will update):
 ## Requirements
 
 [BlueStacks](https://www.bluestacks.com) (free Android emulator)
+
 Python version 3.09+
 
 
