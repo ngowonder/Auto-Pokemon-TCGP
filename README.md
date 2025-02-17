@@ -5,15 +5,11 @@ Auto Pokemon TCG Pocket is a Python script designed to automate daily tasks in t
 
 ## What does it do
 
-Open your free pack if you have it
-
-Gifts
-
-Wonder picks: Chansey and Bonus
-
-Missions
-
-Battle Solo events
+- Open your free pack if you have it
+- Gifts
+- Wonder picks: Chansey and Bonus
+- Missions
+- Battle Solo events
 
 
 ## What's missing
