@@ -27,15 +27,14 @@ Screenshots needed (will update):
 
 ## Requirements
 
-BlueStacks (free Android emulator)
-	- https://www.bluestacks.com
+[BlueStacks](https://www.bluestacks.com) (free Android emulator)
 Python version 3.09+
 
 
 ## Bluestacks settings
 
-display resolution: 1600x900
-dpi 320
+display resolution: 1600x900\n
+dpi: 320
 
 Note: your experience may vary based on computer specs.
 
@@ -43,11 +42,11 @@ Note: your experience may vary based on computer specs.
 ## Instructions to run script
 
 Install python requirements:
-	- `pip install -r requirements.txt`
-	or
-	- `py -m pip install -r requirements.txt`
+- `pip install -r requirements.txt`
+or
+- `py -m pip install -r requirements.txt`
 
 Run script on either Start Game screen or the Home screen
-	- `py auto_pokemon_tcgp.py`
-	or
-	- `py -m auto_pokemon_tcgp`
+- `py auto_pokemon_tcgp.py`
+or
+- `py -m auto_pokemon_tcgp`
