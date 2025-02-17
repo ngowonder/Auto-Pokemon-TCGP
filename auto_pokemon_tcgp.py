@@ -78,7 +78,7 @@ templates = {
     'missions_non_daily_complete': 'images/missions_non_daily_complete.jpg',
     'missions_claim': 'images/missions_claim.jpg',
     'battle': 'images/battle.jpg',
-    #'battle_solo_0': 'images/battle_solo_0.jpg',
+    'battle_solo_0': 'images/battle_solo_0.jpg',
     'battle_solo_1': 'images/battle_solo_1.jpg',
     'battle_drop_event': 'images/battle_solo_drop_event.jpg',
     'battle_solo_stamina': 'images/battle_solo_stamina.jpg',
@@ -556,13 +556,20 @@ def battle_solo(sct, monitor):
         sleep(3)
         return
 
-    solo_event = finding_template(sct, monitor, 'battle_solo_1', 10)
-    if solo_event is not None and len(solo_event) > 0:
-        move_to_click(solo_event)
-    else:
-        print('Solo event not found')
-        sleep(3)
-        return
+    battle_screen_count = 0
+    while battle_screen_count < 10:
+        solo_event = check_template(sct, monitor, 'battle_solo_0')
+        if solo_event is not None and len(solo_event) > 0:
+            print('Solo event not found')
+            sleep(1)
+            return
+        solo_event = check_template(sct, monitor, 'battle_solo_1')
+        if solo_event is not None and len(solo_event) > 0:
+            move_to_click(solo_event)
+            break
+        sleep(1)
+        battle_screen_count += 1
+
 
     drop_event = finding_template(sct, monitor, 'battle_drop_event', 10)
     if drop_event is not None and len(drop_event) > 0:
