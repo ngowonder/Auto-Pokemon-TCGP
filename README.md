@@ -33,7 +33,8 @@ Python version 3.09+
 
 ## Bluestacks settings
 
-display resolution: 1600x900\n
+display resolution: 1600x900
+
 dpi: 320
 
 Note: your experience may vary based on computer specs.
@@ -43,10 +44,12 @@ Note: your experience may vary based on computer specs.
 
 Install python requirements:
 - `pip install -r requirements.txt`
+
 or
 - `py -m pip install -r requirements.txt`
 
 Run script on either Start Game screen or the Home screen
 - `py auto_pokemon_tcgp.py`
+
 or
 - `py -m auto_pokemon_tcgp`
