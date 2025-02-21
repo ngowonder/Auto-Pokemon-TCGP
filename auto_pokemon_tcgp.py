@@ -6,6 +6,7 @@ A Python script designed to automate daily tasks in the Pokemon TCG Pocket using
 Bluestacks settings:
     display resolution: 1600x900
     dpi 320
+
 '''
 
 from opencv_utils import match_template, get_click_location
@@ -25,7 +26,7 @@ enable_check_pack_screen = True
 # desired_pack = 'mew' # charizard, mewtwo, pikachu, mew, dialga, palkia
 desired_pack = random.choice(['mew', 'dialga', 'palkia']) # charizard, mewtwo, pikachu, mew, dialga, palkia
 enable_wonder_pick = True
-enable_wonder_pick_chansey = False
+enable_wonder_pick_event = False
 enable_check_level_up = False
 
 enable_battle = True
@@ -67,9 +68,10 @@ templates = {
     'shop_daily_gift': 'images/shop_daily_gifts.jpg',
     'wonder_pick': 'images/wonder_pick.jpg',
     'wonder_pick_screen': 'images/wonder_pick_screen.jpg',
-    'wonder_pick_chansey': 'images/wonder_pick_chansey.jpg',
-    'wonder_pick_chansey_no_stamina': 'images/wonder_pick_chansey_no_stamina.jpg',
     'wonder_pick_bonus': 'images/wonder_pick_bonus.jpg',
+    'wonder_pick_chansey': 'images/wonder_pick_chansey.jpg',
+    'wonder_pick_rare': 'images/wonder_pick_rare.jpg',
+    'wonder_pick_no_stamina': 'images/wonder_pick_no_stamina.jpg',
     'wonder_pick_a_card_screen': 'images/wonder_pick_a_card_screen.jpg',
     'wonder_pick_card_back': 'images/wonder_pick_card_back.jpg',
     'missions_0': 'images/missions_0.jpg',
@@ -409,22 +411,21 @@ def gifts(sct, monitor):
     if gifts_screen is not None and len(gifts_screen) > 0:
         sleep(0.5)
 
-        ''' # comment until we get 'gifts_claim_all' screenshot
-        claim_all = check_template(sct, monitor, 'gifts_claim_all') # NOTE doesn't work for now; hard to discern 'gifts_claim_all'
+         # NOTE may need higher threshold
+        claim_all = check_template(sct, monitor, 'gifts_claim_all')
         if claim_all is not None and len(claim_all) > 0:
             move_to_click(claim_all)
             sleep(1)
             click_ok(sct, monitor)
             sleep(1)
-        '''
 
         while True:
             claim_card = check_template(sct, monitor, 'gifts_claim_card')
             if claim_card is not None and len(claim_card) > 0:
-                move_to_click(claim_card)
+                # move_to_click(claim_card)
                 sleep(1)
-                click_ok(sct, monitor)
-                open_gift_pack(sct, monitor)
+                # click_ok(sct, monitor)
+                # open_gift_pack(sct, monitor)
             elif claim_card is None or len(claim_card) == 0:
                 break
 
@@ -478,7 +479,7 @@ def wonder_pick(sct, monitor):
     wonder_pick_screen = finding_template(sct, monitor, 'wonder_pick_screen')
     if wonder_pick_screen is not None and len(wonder_pick_screen) > 0:
 
-        event_picks = ['wonder_pick_chansey', 'wonder_pick_bonus']
+        event_picks = ['wonder_pick_chansey', 'wonder_pick_rare', 'wonder_pick_bonus']
 
         for pick in event_picks:
             sleep(1)
@@ -486,22 +487,22 @@ def wonder_pick(sct, monitor):
             if event_pick is not None and len(event_pick) > 0:
                 print(f'Template {pick} found')
 
-                if pick == 'wonder_pick_chansey' and not enable_wonder_pick_chansey:
-                    print('Skipping Chansey pick')
-                    chansey_loc = get_click_location(event_pick)
-                    pyautogui.moveTo(chansey_loc)
+                if pick in ['wonder_pick_chansey', 'wonder_pick_rare'] and not enable_wonder_pick_event:
+                    print('Skipping event pick')
+                    event_loc = get_click_location(event_pick)
+                    pyautogui.moveTo(event_loc)
                     pyautogui.scroll(-1)
                     continue
                 move_to_click(event_pick)
                 sleep(0.5)
 
-                if pick == 'wonder_pick_chansey':
-                    no_stamina = check_template(sct, monitor, 'wonder_pick_chansey_no_stamina')
+                if pick in ['wonder_pick_chansey', 'wonder_pick_rare']:
+                    no_stamina = check_template(sct, monitor, 'wonder_pick_no_stamina')
                     if no_stamina is not None and len(no_stamina) > 0:
                         print('No stamina for Chansey pick')
                         click_x(sct, monitor)
-                        chansey_loc = get_click_location(event_pick)
-                        pyautogui.moveTo(chansey_loc)
+                        event_loc = get_click_location(event_pick)
+                        pyautogui.moveTo(event_loc)
                         pyautogui.scroll(-1)
                         continue
 
@@ -513,6 +514,12 @@ def wonder_pick(sct, monitor):
                     for _ in range(2):
                         click_tap_to_proceed(sct, monitor)
                         sleep(1.5)
+                register_new_cards = check_template(sct, monitor, 'task_click_skip')
+                if register_new_cards is not None and len(register_new_cards) > 0:
+                    for _ in range(2):
+                        click_skip(sct, monitor)
+                        sleep(1)
+                    click_next(sct, monitor)
                 wonder_pick_screen = finding_template(sct, monitor, 'wonder_pick_screen')
                 if wonder_pick_screen is not None and len(wonder_pick_screen) > 0:
                     pass # make sure it's at screen before click_home
