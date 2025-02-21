@@ -1,23 +1,15 @@
 # Auto Pokemon TCG Pocket
 
-Auto Pokemon TCG Pocket is a Python script designed to automate daily tasks in the Pokemon TCG Pocket using Bluestacks
+Auto Pokemon TCG Pocket is designed to automate daily tasks in the Pokemon TCG Pocket using Bluestacks
 
 
 ## What does it do
 
-- Open your free pack if you have it
-- Gifts
-- Wonder picks: Chansey and Bonus
-- Missions
+- Open your free pack if available
+- Gifts: claim your gifts
+- Wonder picks: auto pick Chansey, Rare, and Bonus
+- Missions: Claim and clear your missions
 - Battle Solo events
-
-
-## What's missing
-
-Screenshots needed (will update):
-- level_up_unlocked,
-- gifts_claim_all,
-- pokemon tcgp update app screen
 
 
 ## If you like the project,
