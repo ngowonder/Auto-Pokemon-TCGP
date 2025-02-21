@@ -422,10 +422,10 @@ def gifts(sct, monitor):
         while True:
             claim_card = check_template(sct, monitor, 'gifts_claim_card')
             if claim_card is not None and len(claim_card) > 0:
-                # move_to_click(claim_card)
+                move_to_click(claim_card)
                 sleep(1)
-                # click_ok(sct, monitor)
-                # open_gift_pack(sct, monitor)
+                click_ok(sct, monitor)
+                open_gift_pack(sct, monitor)
             elif claim_card is None or len(claim_card) == 0:
                 break
 
