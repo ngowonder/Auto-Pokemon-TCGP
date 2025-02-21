@@ -26,7 +26,7 @@ enable_check_pack_screen = True
 # desired_pack = 'mew' # charizard, mewtwo, pikachu, mew, dialga, palkia
 desired_pack = random.choice(['mew', 'dialga', 'palkia']) # charizard, mewtwo, pikachu, mew, dialga, palkia
 enable_wonder_pick = True
-enable_wonder_pick_event = False
+enable_wonder_pick_event = True
 enable_check_level_up = False
 
 enable_battle = True
