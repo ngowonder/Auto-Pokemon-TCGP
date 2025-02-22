@@ -514,6 +514,7 @@ def wonder_pick(sct, monitor):
                     for _ in range(2):
                         click_tap_to_proceed(sct, monitor)
                         sleep(1.5)
+                    sleep(1)
                 register_new_cards = check_template(sct, monitor, 'task_click_skip')
                 if register_new_cards is not None and len(register_new_cards) > 0:
                     for _ in range(2):
