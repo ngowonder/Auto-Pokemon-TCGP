@@ -23,19 +23,19 @@ import win32gui
 
 
 enable_check_pack_screen = True
-# desired_pack = 'mew' # charizard, mewtwo, pikachu, mew, dialga, palkia
-desired_pack = random.choice(['mew', 'dialga', 'palkia']) # charizard, mewtwo, pikachu, mew, dialga, palkia
+desired_pack = 'arceus' # charizard, mewtwo, pikachu, mew, dialga, palkia, arceus
+# desired_pack = random.choice(['mew', 'dialga', 'palkia', 'arceus']) # charizard, mewtwo, pikachu, mew, dialga, palkia, arceus
 enable_wonder_pick = True
 enable_wonder_pick_event = True
-enable_check_level_up = False
+enable_check_level_up = True
 
 enable_battle = True
 desired_battle_diff = 'expert' # beginner, intermediate, advanced, expert
-battle_check_time = 270 # sleep time before battle_check; only 0 is False.
+battle_check_time = 240 # sleep time before battle_check; only 0 is False.
 enable_battle_defeat_redo = True
 enable_battle_victory_repeat = False
 
-enable_exit_app = False
+enable_exit_app = True
 
 EXE_PATH = r'"C:\Program Files\BlueStacks_nxt\HD-Player.exe" --instance Pie64 --cmd launchApp --package "jp.pokemon.pokemontcgp" --source desktop_shortcut'
 HWND = win32gui.FindWindow(None, 'BlueStacks App Player')
@@ -49,19 +49,22 @@ templates = {
     'pack': 'images/pack.jpg',
     'pack_can_open': 'images/pack_can_open.jpg',
     'pack_select_other_pack': 'images/pack_select_other_booster_packs.jpg',
-    'pack_select_package': 'images/pack_select_package.jpg',
+    'pack_select_package_0': 'images/pack_select_package_0.jpg',
+    'pack_select_package_2': 'images/pack_select_package_2.jpg',
+    'pack_select_package_3': 'images/pack_select_package_3.jpg',
     'pack_select_pack_charizard': 'images/pack_select_pack_charizard.jpg',
     'pack_select_pack_mewtwo': 'images/pack_select_pack_mewtwo.jpg',
     'pack_select_pack_pikachu': 'images/pack_select_pack_pikachu.jpg',
     'pack_select_pack_mew': 'images/pack_select_pack_mew.jpg',
     'pack_select_pack_dialga': 'images/pack_select_pack_dialga.jpg',
     'pack_select_pack_palkia': 'images/pack_select_pack_palkia.jpg',
+    'pack_select_pack_arceus': 'images/pack_select_pack_arceus.jpg',
     'pack_open': 'images/pack_open.jpg',
     'pack_open_slice': 'images/pack_open_slice.jpg',
     'gifts': 'images/gifts.jpg',
     'gifts_screen': 'images/gifts_screen.jpg',
     'gifts_claim_all': 'images/gifts_claim_all.jpg',
-    'gifts_claim_card': 'images/gifts_claim_card.jpg',
+    'gifts_claim_gift': 'images/gifts_claim_gift.jpg',
     'gifts_no_claim': 'images/gifts_no_claimable_items.jpg',
     'shop': 'images/shop.jpg',
     # 'shop_screen': 'images/shop_screen.jpg', # maybe this isn't needed; there's a finding in shop()
@@ -98,20 +101,22 @@ templates = {
     'battle_end_victory_new_battle_unlocked': 'images/battle_end_victory_new_battle_unlocked.jpg',
     'level_up': 'images/level_up.jpg',
     'level_up_unlocked': 'images/level_up_unlocked.jpg',
-    'bluestacks_x': 'images/bluestacks_x.jpg',
-    'bluestacks_close': 'images/bluestacks_close.jpg',
     'task_click_next': 'images/task_click_next.jpg',
     'task_click_ok': 'images/task_click_ok.jpg',
     'task_click_skip': 'images/task_click_skip.jpg',
     'task_click_x': 'images/task_click_x.jpg',
     'task_tap_hold': 'images/task_tap_hold.jpg',
     'task_tap_proceed': 'images/task_tap_proceed.jpg',
+    'bluestacks_x': 'images/bluestacks_x.jpg',
+    'bluestacks_close': 'images/bluestacks_close.jpg',
+    'pokemon_tcgp_update_data': 'images/pokemon_tcgp_update_data.jpg',
 
     # Add more templates as needed
         # '': cv2.imread('images/.jpg'),
     # To use templates
         # template = templates.get(template_key)
 }
+
 card_pack_to_template_key = {
     'charizard':'pack_select_pack_charizard',
     'mewtwo':'pack_select_pack_mewtwo',
@@ -119,6 +124,17 @@ card_pack_to_template_key = {
     'mew':'pack_select_pack_mew',
     'dialga':'pack_select_pack_dialga',
     'palkia':'pack_select_pack_palkia',
+    'arceus':'pack_select_pack_arceus'
+}
+
+package_to_template_key = {
+    'charizard': 'pack_select_package_0',
+    'mewtwo': 'pack_select_package_0',
+    'pikachu': 'pack_select_package_0',
+    'mew': 'pack_select_package_0',
+    'dialga': 'pack_select_package_2',
+    'palkia': 'pack_select_package_2',
+    'arceus': 'pack_select_package_3'
 }
 
 battle_diff_to_template_key = {
@@ -134,16 +150,15 @@ def main():
     with mss() as sct:
         monitor = sct.monitors[1]
         launch_game()
-        # win32gui.SetForegroundWindow(HWND)
         start = start_game(sct, monitor)
         if start:
-            have_booster_pack = check_have_booster_pack(sct, monitor)
+            have_booster_pack = check_after_start_game(sct, monitor)
             if have_booster_pack is not None and len(have_booster_pack) > 0:
-                open_booster_packs(sct, monitor)
+                open_booster_pack(sct, monitor)
         elif enable_check_pack_screen and check_at_home(sct, monitor):
             check_booster_pack_screen(sct, monitor)
-        if enable_check_level_up:
-            check_level_up(sct, monitor)
+        '''if enable_check_level_up:
+            check_level_up(sct, monitor)'''
         have_gifts = check_gifts(sct, monitor)
         if have_gifts:
             gifts(sct, monitor)
@@ -152,8 +167,8 @@ def main():
             shop(sct, monitor)
         if enable_wonder_pick:
             wonder_pick(sct, monitor)
-            if enable_check_level_up:
-                check_level_up(sct, monitor)
+            '''if enable_check_level_up:
+                check_level_up(sct, monitor)'''
         have_missions = check_missions(sct, monitor)
         if have_missions:
             missions(sct, monitor)
@@ -185,17 +200,13 @@ def launch_game():
                 sleep(1)
                 if is_process_running():
                     break
-            sleep(1)
-            win32gui.SetForegroundWindow(HWND)
-            '''
-            # workaround for win32gui.SetForegroundWindow() to work
-            # runs new py script and exit the old one
+            sleep(3)
+            # win32gui.SetForegroundWindow(HWND)
 
-            python = sys.executable
-            script = os.path.abspath(__file__)
-            subprocess.run([python, script] + sys.argv[1:]) # run new py
-            sys.exit() # exit old py
-            '''
+            '''workaround for win32gui.SetForegroundWindow() to work
+            runs new py script and exit the old one'''
+            restart_script()
+
         except PermissionError as e:
             print(f"PermissionError: {e}")
         except Exception as e:
@@ -205,14 +216,22 @@ def launch_game():
         win32gui.SetForegroundWindow(HWND)
 
 
+def restart_script():
+    print('Restarting py script')
+    python = sys.executable
+    script = os.path.abspath(__file__)
+    subprocess.run([python, script] + sys.argv[1:]) # run new py
+    sys.exit() # exit old py
+
+
 def start_game(sct, monitor):
-    print('Starting game')
     count = 0
     max_attempts = 120
 
     while count < max_attempts:
         start = check_template(sct, monitor, 'start_game')
         if start is not None and len(start) > 0:
+            print('Starting game')
             move_to_click(start)
             sleep(10)
             return True
@@ -242,13 +261,8 @@ def check_at_home(sct, monitor):
 '''
 
 def check_gifts(sct, monitor):
-    template_key = 'gifts'
-    template_path = templates.get(template_key)
-    template = cv2.imread(os.path.join(SCRIPT_DIR, template_path))
-
-    image = sct.grab(monitor)
-    matched_image, have_gifts = match_template(image, template, threshold=0.95)
-    if len(have_gifts) > 0:
+    have_gifts = check_template(sct, monitor, 'gifts', threshold=0.95)
+    if have_gifts is not None and len(have_gifts) > 0:
         move_to_click(have_gifts)
         sleep(1)
         return True
@@ -279,13 +293,21 @@ def check_missions(sct, monitor):
             return True
 
 
-def check_have_booster_pack(sct, monitor):
+def check_after_start_game(sct, monitor):
     count = 0
     max_attempts = 30
 
     while count < max_attempts:
         home = check_at_home(sct, monitor)
         if home is not None and len(home) > 0:
+            return None
+
+        pokemon_tcgp_update_data = check_template(sct, monitor, 'pokemon_tcgp_update_data')
+        if pokemon_tcgp_update_data is not None and len(pokemon_tcgp_update_data) > 0:
+            print('Have Pokemon TCGP update')
+            click_ok(sct, monitor)
+            sleep(3)
+            restart_script()
             return None
 
         booster_pack = check_template(sct, monitor, 'pack_can_open')
@@ -295,7 +317,7 @@ def check_have_booster_pack(sct, monitor):
 
         sleep(0.5)
         count += 1
-    print(f"Error with check_have_booster_pack")
+    print(f"Error with check_after_start_game")
     return None
 
 
@@ -330,7 +352,7 @@ def check_booster_pack_screen(sct, monitor):
     if can_open_pack is not None and len(can_open_pack) > 0:
         print('Can open booster pack')
         sleep(1)
-        open_booster_packs(sct, monitor)
+        open_booster_pack(sct, monitor)
     else:
         print('No booster pack to open')
 
@@ -339,56 +361,85 @@ def check_booster_pack_screen(sct, monitor):
     return
 
 
-def open_booster_packs(sct, monitor):
-    print('Opening pack')
+def open_booster_pack(sct, monitor):
+    def select_card_pack(key):
+        card_pack = card_pack_to_template_key.get(key)
+        if card_pack:
+            return card_pack
+        else:
+            print(f"Error: No card pack for '{key}'")
+            return None
 
+    def select_package(key):
+        package = package_to_template_key.get(key)
+        if package:
+            return package
+        else:
+            print(f"Error: No package for '{key}'")
+            return None
+
+    print('Opening pack')
     sleep(1)
     click_template(sct, monitor, 'pack_select_other_pack')
-    pack_select = card_pack_to_template_key.get(desired_pack)
-    click_template(sct, monitor, pack_select) # from expansion pack screen
-    sleep(3)
-    click_template(sct, monitor, 'pack_select_package') # card package
+
+    card_pack = select_card_pack(desired_pack)
+    # card_pack = card_pack_to_template_key.get(desired_pack)
+    if card_pack is not None:
+        click_template(sct, monitor, card_pack) # from expansion pack screen
+        sleep(2) # NOTE was 3
+    else:
+        print('Error in select_card_pack')
+        click_home(sct, monitor)
+        return
+
+    package = select_package(desired_pack)
+    # package = package_to_template_key.get(desired_pack)
+    if package is not None:
+        click_template(sct, monitor, package) # card package
+    else:
+        print('Error in select_package')
+        click_home(sct, monitor)
+        return
+
     click_template(sct, monitor, 'pack_open')
     click_skip(sct, monitor)
 
-    open_pack_slice(sct, monitor)
-
-    click_tap_hold(sct, monitor) # opening cards
-    click_next(sct, monitor) # opening result
-    sleep(5)
-
-    congrat_screen = check_template(sct, monitor, 'task_tap_proceed') # collection milestones
-    if congrat_screen is not None and len(congrat_screen) > 0:
-        click_tap_to_proceed(sct, monitor)
-        sleep(3)
-
-    new_cards = check_template(sct, monitor, 'task_click_skip') # if new card, register to dex
-    if new_cards is not None and len(new_cards) > 0:
-        for _ in range(2):
-            click_skip(sct, monitor)
-            sleep(1)
-
-    click_next(sct, monitor)
-    sleep(1)
+    open_pack(sct, monitor)
 
     click_home(sct, monitor)
     print('Finish opening pack')
     return
 
 
-def open_gift_pack(sct, monitor):
-    open_pack_slice(sct, monitor)
-    click_tap_hold(sct, monitor)
-    click_next(sct, monitor)
-    click_ok(sct, monitor) # only in gift pack
+def open_pack(sct, monitor):
+    open_slice = finding_template(sct, monitor, 'pack_open_slice')
+    while open_slice is not None and len(open_slice) > 0:
+        open_pack_slice(sct, monitor)
+        click_tap_hold(sct, monitor)
+        click_next(sct, monitor)
+        sleep(5)
+        open_slice = check_template(sct, monitor, 'pack_open_slice')
 
-    new_card = check_template(sct, monitor, 'task_click_skip') # if new card, register to dex
-    if new_card is not None and len(new_card) > 0:
+    congrat_screen = check_template(sct, monitor, 'task_tap_proceed') # collection milestones
+    if congrat_screen is not None and len(congrat_screen) > 0:
+        click_tap_to_proceed(sct, monitor)
+        sleep(3)
+
+    new_cards = check_template(sct, monitor, 'task_click_skip') # if new cards, register to dex
+    if new_cards is not None and len(new_cards) > 0:
         for _ in range(2):
             click_skip(sct, monitor)
+            sleep(1)
+        click_next(sct, monitor)
+        sleep(1) # NOTE sleep might not be enough
+
+    shinedust = check_template(sct, monitor, 'task_click_ok')
+    if shinedust is not None and len(shinedust) > 0:
+        click_ok(sct, monitor) # click_ok to claim shinedust
+        sleep(1)
 
 
-def open_pack_slice(sct, monitor):
+def open_pack_slice(sct, monitor): # trace line to open
     open_slice = finding_template(sct, monitor, 'pack_open_slice')
     if open_slice is not None and len(open_slice) > 0:
         # Find the bounding box with the smallest x-coordinate
@@ -411,22 +462,28 @@ def gifts(sct, monitor):
     if gifts_screen is not None and len(gifts_screen) > 0:
         sleep(0.5)
 
-         # NOTE may need higher threshold
-        claim_all = check_template(sct, monitor, 'gifts_claim_all')
+        claim_all = check_template(sct, monitor, 'gifts_claim_all', threshold=0.98)
         if claim_all is not None and len(claim_all) > 0:
             move_to_click(claim_all)
             sleep(1)
-            click_ok(sct, monitor)
-            sleep(1)
+
+            # work-around when claim_all isn't detected properly
+            claim_all_ok = check_template(sct, monitor, 'task_click_ok')
+            if claim_all_ok is not None and len(claim_all_ok) > 0:
+                click_ok(sct, monitor)
+                sleep(1)
 
         while True:
-            claim_card = check_template(sct, monitor, 'gifts_claim_card')
-            if claim_card is not None and len(claim_card) > 0:
-                move_to_click(claim_card)
+            claim_gift = check_template(sct, monitor, 'gifts_claim_gift')
+            if claim_gift is not None and len(claim_gift) > 0:
+                move_to_click(claim_gift)
                 sleep(1)
                 click_ok(sct, monitor)
-                open_gift_pack(sct, monitor)
-            elif claim_card is None or len(claim_card) == 0:
+                open_pack(sct, monitor)
+                gifts_screen =  check_template(sct, monitor, 'gifts_screen', 10)
+                if gifts_screen is not None and len(gifts_screen) > 0:
+                    pass # check if at gifts_screen before new actions
+            elif claim_gift is None or len(claim_gift) == 0:
                 break
 
         no_claim = check_template(sct, monitor, 'gifts_no_claim')
@@ -499,7 +556,7 @@ def wonder_pick(sct, monitor):
                 if pick in ['wonder_pick_chansey', 'wonder_pick_rare']:
                     no_stamina = check_template(sct, monitor, 'wonder_pick_no_stamina')
                     if no_stamina is not None and len(no_stamina) > 0:
-                        print('No stamina for Chansey pick')
+                        print('No stamina for special wonder pick')
                         click_x(sct, monitor)
                         event_loc = get_click_location(event_pick)
                         pyautogui.moveTo(event_loc)
@@ -514,7 +571,7 @@ def wonder_pick(sct, monitor):
                     for _ in range(2):
                         click_tap_to_proceed(sct, monitor)
                         sleep(1.5)
-                    sleep(1)
+                    sleep(3)
                 register_new_cards = check_template(sct, monitor, 'task_click_skip')
                 if register_new_cards is not None and len(register_new_cards) > 0:
                     for _ in range(2):
@@ -544,12 +601,14 @@ def missions(sct, monitor):
     non_daily_complete = check_template(sct, monitor, 'missions_non_daily_complete')
     if non_daily_complete is not None and len(non_daily_complete) > 0:
         click_ok(sct, monitor)
+        sleep(3)
 
     claim = check_template(sct, monitor, 'missions_claim')
     if claim is not None and len(claim) > 0:
         move_to_click(claim)
         sleep(1)
         click_ok(sct, monitor)
+        sleep(1)
     click_x(sct, monitor)
     print('Missions clear')
 
@@ -648,6 +707,7 @@ def battle_solo(sct, monitor):
 
         if battle_check_time != 0:
             sleep(battle_check_time)
+            print('Battle sleep is over')
             win32gui.SetForegroundWindow(HWND)
             sleep(0.5)
 
@@ -657,7 +717,7 @@ def battle_solo(sct, monitor):
                 print('Battle end in defeat')
                 for _ in range(2):
                     click_tap_to_proceed(sct, monitor)
-                    sleep(1.5)
+                    sleep(1)
                 battle_rewards = check_template(sct, monitor, 'task_tap_proceed') # battle task rewards
                 if battle_rewards is not None and len(battle_rewards) > 0:
                     move_to_click(battle_rewards)
@@ -674,7 +734,7 @@ def battle_solo(sct, monitor):
                 click_template(sct, monitor, 'battle_end_victory_proceed')
                 for _ in range(2):
                     click_tap_to_proceed(sct, monitor)
-                    sleep(1.5)
+                    sleep(1)
                 battle_rewards = check_template(sct, monitor, 'task_tap_proceed') # battle task rewards
                 if battle_rewards is not None and len(battle_rewards) > 0:
                     move_to_click(battle_rewards)
@@ -766,15 +826,32 @@ def click_x(sct, monitor):
     return x
 
 
+'''
 def click_tap_hold(sct, monitor):
     tap_hold = finding_template(sct, monitor, 'task_tap_hold')
     if tap_hold is not None and len(tap_hold) > 0:
         loc = get_click_location(tap_hold)
         pyautogui.moveTo(loc)
         pyautogui.mouseDown()
-        sleep(5)
+        sleep(10)
         pyautogui.mouseUp()
     return tap_hold
+'''
+
+
+def click_tap_hold(sct, monitor):
+    tap_hold = finding_template(sct, monitor, 'task_tap_hold')
+    if tap_hold is not None and len(tap_hold) > 0:
+        while True:
+            loc = get_click_location(tap_hold)
+            pyautogui.moveTo(loc)
+            pyautogui.mouseDown()
+            sleep(3)
+            pyautogui.mouseUp()
+            sleep(0.25)
+            tap_hold = check_template(sct, monitor, 'task_tap_hold')
+            if tap_hold is None or len(tap_hold) == 0:
+                return
 
 
 def click_tap_to_proceed(sct, monitor):
@@ -795,7 +872,7 @@ def click_template(sct, monitor, template_key):
         return False
 
 
-def check_template(sct, monitor, template_key):
+def check_template(sct, monitor, template_key, threshold=0.85):
     template_path = templates.get(template_key)
     if template_path is None:
         print(f"Template '{template_key}' not found")
@@ -808,14 +885,14 @@ def check_template(sct, monitor, template_key):
         return None
 
     image = sct.grab(monitor)
-    matched_image, boxes = match_template(image, template)
+    matched_image, boxes = match_template(image, template, threshold=threshold)
     if len(boxes) > 0:
         print(f"Template '{template_key}' found")
         return boxes
     return None
 
 
-def finding_template(sct, monitor, template_key, max_attempts=60):
+def finding_template(sct, monitor, template_key, max_attempts=60, threshold=0.85):
     count = 0
     max_attempts = 60
     sleep_duration = 0.5
@@ -833,7 +910,7 @@ def finding_template(sct, monitor, template_key, max_attempts=60):
 
     while count < max_attempts:
         image = sct.grab(monitor)
-        matched_image, boxes = match_template(image, template)
+        matched_image, boxes = match_template(image, template, threshold=threshold)
         if len(boxes) > 0:
             print(f"Template '{template_key}' found")
             return boxes
