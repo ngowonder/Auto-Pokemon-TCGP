@@ -23,8 +23,8 @@ import win32gui
 
 
 enable_check_pack_screen = True
-desired_pack = 'arceus' # charizard, mewtwo, pikachu, mew, dialga, palkia, arceus
-# desired_pack = random.choice(['mew', 'dialga', 'palkia', 'arceus']) # charizard, mewtwo, pikachu, mew, dialga, palkia, arceus
+# desired_pack = 'arceus' # charizard, mewtwo, pikachu, mew, dialga, palkia, arceus
+desired_pack = random.choice(['mew', 'dialga', 'palkia', 'arceus']) # charizard, mewtwo, pikachu, mew, dialga, palkia, arceus
 enable_wonder_pick = True
 enable_wonder_pick_event = True
 enable_check_level_up = True
@@ -231,7 +231,7 @@ def start_game(sct, monitor):
     while count < max_attempts:
         start = check_template(sct, monitor, 'start_game')
         if start is not None and len(start) > 0:
-            print('Starting game')
+            print('\nStarting Game')
             move_to_click(start)
             sleep(10)
             return True
@@ -333,7 +333,7 @@ def check_level_up(sct, monitor):
 
 
 def check_booster_pack_screen(sct, monitor):
-    print('Opening booster pack screen')
+    print('\nOpening Booster Pack Screen')
 
     pack = finding_template(sct, monitor, 'pack', 10)
     if pack is not None and len(pack) > 0:
@@ -378,7 +378,7 @@ def open_booster_pack(sct, monitor):
             print(f"Error: No package for '{key}'")
             return None
 
-    print('Opening pack')
+    print('\nOpening Pack')
     sleep(1)
     click_template(sct, monitor, 'pack_select_other_pack')
 
@@ -456,7 +456,7 @@ def open_pack_slice(sct, monitor): # trace line to open
 
 
 def gifts(sct, monitor):
-    print('Opening gifts')
+    print('\nOpening gifts')
 
     gifts_screen =  finding_template(sct, monitor, 'gifts_screen', 10)
     if gifts_screen is not None and len(gifts_screen) > 0:
@@ -493,7 +493,7 @@ def gifts(sct, monitor):
 
 
 def shop(sct, monitor):
-    print('Opening shop')
+    print('\nOpening shop')
 
     daily_gift = finding_template(sct, monitor, 'shop_daily_gift')
     if daily_gift is not None and len(daily_gift) > 0:
@@ -531,6 +531,7 @@ def wonder_pick(sct, monitor):
         else:
             print('No card backs found to pick')
 
+    print('\nOpening Wonder Pick')
     click_template(sct, monitor, 'wonder_pick')
 
     wonder_pick_screen = finding_template(sct, monitor, 'wonder_pick_screen')
@@ -568,16 +569,16 @@ def wonder_pick(sct, monitor):
                 wonder_pick_a_card_screen = finding_template(sct, monitor, 'wonder_pick_a_card_screen')
                 if wonder_pick_a_card_screen is not None and len(wonder_pick_a_card_screen) > 0:
                     pick_random_card(sct, monitor)
-                    for _ in range(2):
-                        click_tap_to_proceed(sct, monitor)
-                        sleep(1.5)
+                    click_tap_to_proceed(sct, monitor)
                     sleep(3)
-                register_new_cards = check_template(sct, monitor, 'task_click_skip')
-                if register_new_cards is not None and len(register_new_cards) > 0:
-                    for _ in range(2):
-                        click_skip(sct, monitor)
-                        sleep(1)
-                    click_next(sct, monitor)
+                    new_cards = check_template(sct, monitor, 'task_click_skip')
+                    if new_cards is not None and len(new_cards) > 0:
+                        for _ in range(2):
+                            click_skip(sct, monitor)
+                            sleep(1)
+                        click_next(sct, monitor)
+                    click_tap_to_proceed(sct, monitor)
+                    sleep(1)
                 wonder_pick_screen = finding_template(sct, monitor, 'wonder_pick_screen')
                 if wonder_pick_screen is not None and len(wonder_pick_screen) > 0:
                     pass # make sure it's at screen before click_home
@@ -589,7 +590,7 @@ def wonder_pick(sct, monitor):
 
 
 def missions(sct, monitor):
-    print('Starting mission clear')
+    print('\nStarting Mission clear')
 
     complete_all = finding_template(sct, monitor, 'missions_complete_all', 5)
     if complete_all is not None and len(complete_all) > 0:
@@ -614,7 +615,7 @@ def missions(sct, monitor):
 
 
 def battle_solo(sct, monitor):
-    print('Starting battle')
+    print('\nStarting Battle')
     battle = finding_template(sct, monitor, 'battle')
     if battle is not None and len(battle) > 0:
         move_to_click(battle)
@@ -699,7 +700,7 @@ def battle_solo(sct, monitor):
             if go_battle is not None and len(go_battle) > 0:
                 move_to_click(go_battle)
                 battle_count += 1
-                print(f'Go battle #{battle_count}')
+                print(f'\nGo Battle #{battle_count}')
             else:
                 print('Battle button not found')
                 sleep(3)
@@ -717,7 +718,7 @@ def battle_solo(sct, monitor):
                 print('Battle end in defeat')
                 for _ in range(2):
                     click_tap_to_proceed(sct, monitor)
-                    sleep(1)
+                    # sleep(1)
                 battle_rewards = check_template(sct, monitor, 'task_tap_proceed') # battle task rewards
                 if battle_rewards is not None and len(battle_rewards) > 0:
                     move_to_click(battle_rewards)
@@ -734,7 +735,7 @@ def battle_solo(sct, monitor):
                 click_template(sct, monitor, 'battle_end_victory_proceed')
                 for _ in range(2):
                     click_tap_to_proceed(sct, monitor)
-                    sleep(1)
+                    # sleep(1)
                 battle_rewards = check_template(sct, monitor, 'task_tap_proceed') # battle task rewards
                 if battle_rewards is not None and len(battle_rewards) > 0:
                     move_to_click(battle_rewards)
@@ -768,7 +769,7 @@ def exit_bluestacks(sct, monitor):
     if x is None or len(x) == 0:
         print('Failed to find BlueStacks X button')
         return
-    print('Exiting BlueStacks')
+    print('\nExiting BlueStacks')
     move_to_click(x)
     sleep(1)
     close = finding_template(sct, monitor, 'bluestacks_close')
@@ -927,7 +928,7 @@ def move_to_click(boxes):
         return
 
     loc = get_click_location(boxes)
-    print(f"Click at location: {loc}")
+    # print(f"Click at location: {loc}")
     pyautogui.moveTo(loc, duration=0.25)
     pyautogui.click(loc)
 
