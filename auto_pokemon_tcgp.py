@@ -162,20 +162,20 @@ def main():
         have_gifts = check_gifts(sct, monitor)
         if have_gifts:
             gifts(sct, monitor)
-        have_shop = check_shop(sct, monitor)
-        if have_shop:
-            shop(sct, monitor)
         if enable_wonder_pick:
             wonder_pick(sct, monitor)
             '''if enable_check_level_up:
                 check_level_up(sct, monitor)'''
+        have_shop = check_shop(sct, monitor)
+        if have_shop:
+            shop(sct, monitor)
         have_missions = check_missions(sct, monitor)
         if have_missions:
             missions(sct, monitor)
         if enable_battle:
-            battle_solo(sct, monitor)
+            battle_victory = battle_solo(sct, monitor)
             click_home(sct, monitor)
-            if enable_check_level_up:
+            if enable_check_level_up and battle_victory:
                 check_level_up(sct, monitor)
         if enable_exit_app:
             exit_bluestacks(sct, monitor)
@@ -300,6 +300,7 @@ def check_after_start_game(sct, monitor):
     while count < max_attempts:
         home = check_at_home(sct, monitor)
         if home is not None and len(home) > 0:
+            sleep(0.2)
             return None
 
         pokemon_tcgp_update_data = check_template(sct, monitor, 'pokemon_tcgp_update_data')
@@ -386,7 +387,7 @@ def open_booster_pack(sct, monitor):
     # card_pack = card_pack_to_template_key.get(desired_pack)
     if card_pack is not None:
         click_template(sct, monitor, card_pack) # from expansion pack screen
-        sleep(2) # NOTE was 3
+        sleep(2)
     else:
         print('Error in select_card_pack')
         click_home(sct, monitor)
@@ -431,7 +432,7 @@ def open_pack(sct, monitor):
             click_skip(sct, monitor)
             sleep(1)
         click_next(sct, monitor)
-        sleep(1) # NOTE sleep might not be enough
+        sleep(1)
 
     shinedust = check_template(sct, monitor, 'task_click_ok')
     if shinedust is not None and len(shinedust) > 0:
@@ -456,7 +457,7 @@ def open_pack_slice(sct, monitor): # trace line to open
 
 
 def gifts(sct, monitor):
-    print('\nOpening gifts')
+    print('\nOpening Gifts')
 
     gifts_screen =  finding_template(sct, monitor, 'gifts_screen', 10)
     if gifts_screen is not None and len(gifts_screen) > 0:
@@ -465,9 +466,9 @@ def gifts(sct, monitor):
         claim_all = check_template(sct, monitor, 'gifts_claim_all', threshold=0.98)
         if claim_all is not None and len(claim_all) > 0:
             move_to_click(claim_all)
-            sleep(1)
+            sleep(2)
 
-            # work-around when claim_all isn't detected properly
+            # fallback when claim_all isn't detected properly
             claim_all_ok = check_template(sct, monitor, 'task_click_ok')
             if claim_all_ok is not None and len(claim_all_ok) > 0:
                 click_ok(sct, monitor)
@@ -490,20 +491,6 @@ def gifts(sct, monitor):
         if no_claim is not None and len(no_claim) > 0:
             click_x(sct, monitor)
     print('Finish opening gifts')
-
-
-def shop(sct, monitor):
-    print('\nOpening shop')
-
-    daily_gift = finding_template(sct, monitor, 'shop_daily_gift')
-    if daily_gift is not None and len(daily_gift) > 0:
-        move_to_click(daily_gift)
-        sleep(0.5)
-        click_ok(sct, monitor)
-        click_x(sct, monitor)
-    else:
-        print('Daily gifts button not found')
-    print('Finish with shop')
 
 
 def wonder_pick(sct, monitor):
@@ -543,8 +530,6 @@ def wonder_pick(sct, monitor):
             sleep(1)
             event_pick = check_template(sct, monitor, pick)
             if event_pick is not None and len(event_pick) > 0:
-                print(f'Template {pick} found')
-
                 if pick in ['wonder_pick_chansey', 'wonder_pick_rare'] and not enable_wonder_pick_event:
                     print('Skipping event pick')
                     event_loc = get_click_location(event_pick)
@@ -583,10 +568,24 @@ def wonder_pick(sct, monitor):
                 if wonder_pick_screen is not None and len(wonder_pick_screen) > 0:
                     pass # make sure it's at screen before click_home
             else:
-                print(f'Template {pick} not found')
+                print(f"Template '{pick}' not found")
 
     click_home(sct, monitor)
     return
+
+
+def shop(sct, monitor):
+    print('\nOpening shop')
+
+    daily_gift = finding_template(sct, monitor, 'shop_daily_gift')
+    if daily_gift is not None and len(daily_gift) > 0:
+        move_to_click(daily_gift)
+        sleep(0.5)
+        click_ok(sct, monitor)
+        click_x(sct, monitor)
+    else:
+        print('Daily gifts button not found')
+    print('Finish with shop')
 
 
 def missions(sct, monitor):
@@ -595,7 +594,7 @@ def missions(sct, monitor):
     complete_all = finding_template(sct, monitor, 'missions_complete_all', 5)
     if complete_all is not None and len(complete_all) > 0:
         move_to_click(complete_all)
-        sleep(3)
+        sleep(5)
     else:
         print('Complete all missions button not found')
 
@@ -622,7 +621,7 @@ def battle_solo(sct, monitor):
     else:
         print('Battle button not found')
         sleep(3)
-        return
+        return False
 
     battle_screen_count = 0
     while battle_screen_count < 10:
@@ -630,7 +629,7 @@ def battle_solo(sct, monitor):
         if solo_event is not None and len(solo_event) > 0:
             print('Solo event not found')
             sleep(1)
-            return
+            return False
         solo_event = check_template(sct, monitor, 'battle_solo_1')
         if solo_event is not None and len(solo_event) > 0:
             move_to_click(solo_event)
@@ -645,7 +644,7 @@ def battle_solo(sct, monitor):
     else:
         print('Drop event not found')
         sleep(3)
-        return
+        return False
 
     battle_count = 0
     while True:
@@ -656,7 +655,7 @@ def battle_solo(sct, monitor):
         else:
             print('Solo stamina not found')
             sleep(3)
-            return
+            return False
 
         sleep(0.5)
         diff_screen_key = battle_diff_to_template_key.get('beginner')
@@ -668,13 +667,13 @@ def battle_solo(sct, monitor):
         else:
             print('Not at battle difficulty screen')
             sleep(3)
-            return
+            return False
 
         diff_key = battle_diff_to_template_key.get(desired_battle_diff)
         if not diff_key:
             print(f"Invalid difficulty level: {desired_battle_diff}")
             sleep(3)
-            return
+            return False
         if desired_battle_diff in ('advanced', 'expert'):
             pyautogui.scroll(-5)
             sleep(1)
@@ -684,7 +683,7 @@ def battle_solo(sct, monitor):
         else:
             print(f"Desired difficulty '{desired_battle_diff}' button not found")
             sleep(3)
-            return
+            return False
 
         battle_rules_screen = finding_template(sct, monitor, 'battle_rules_screen')
         if battle_rules_screen is not None and len(battle_rules_screen) > 0:
@@ -694,7 +693,7 @@ def battle_solo(sct, monitor):
             else:
                 print('Auto battle button not found')
                 sleep(3)
-                return
+                return False
 
             go_battle = finding_template(sct, monitor, 'battle_rules_go_battle')
             if go_battle is not None and len(go_battle) > 0:
@@ -704,7 +703,7 @@ def battle_solo(sct, monitor):
             else:
                 print('Battle button not found')
                 sleep(3)
-                return
+                return False
 
         if battle_check_time != 0:
             sleep(battle_check_time)
@@ -718,7 +717,7 @@ def battle_solo(sct, monitor):
                 print('Battle end in defeat')
                 for _ in range(2):
                     click_tap_to_proceed(sct, monitor)
-                    # sleep(1)
+                    sleep(0.5)
                 battle_rewards = check_template(sct, monitor, 'task_tap_proceed') # battle task rewards
                 if battle_rewards is not None and len(battle_rewards) > 0:
                     move_to_click(battle_rewards)
@@ -735,7 +734,7 @@ def battle_solo(sct, monitor):
                 click_template(sct, monitor, 'battle_end_victory_proceed')
                 for _ in range(2):
                     click_tap_to_proceed(sct, monitor)
-                    # sleep(1)
+                    sleep(0.5)
                 battle_rewards = check_template(sct, monitor, 'task_tap_proceed') # battle task rewards
                 if battle_rewards is not None and len(battle_rewards) > 0:
                     move_to_click(battle_rewards)
@@ -749,7 +748,7 @@ def battle_solo(sct, monitor):
                 else:
                     print('Battle finish')
                     sleep(3)
-                    return # ends with victory
+                    return True # ends with victory
             sleep(8)
             win32gui.SetForegroundWindow(HWND)
             sleep(2)
