@@ -23,8 +23,8 @@ import win32gui
 
 
 enable_check_pack_screen = True
-# desired_pack = 'arceus' # charizard, mewtwo, pikachu, mew, dialga, palkia, arceus
-desired_pack = random.choice(['mew', 'dialga', 'palkia', 'arceus']) # charizard, mewtwo, pikachu, mew, dialga, palkia, arceus
+desired_pack = 'shiny' # charizard, mewtwo, pikachu, mew, dialga, palkia, arceus, shiny
+# desired_pack = random.choice(['mew', 'dialga', 'palkia', 'arceus', 'shiny']) # charizard, mewtwo, pikachu, mew, dialga, palkia, arceus, shiny
 enable_wonder_pick = True
 enable_wonder_pick_event = True
 enable_check_level_up = True
@@ -49,9 +49,11 @@ templates = {
     'pack': 'images/pack.jpg',
     'pack_can_open': 'images/pack_can_open.jpg',
     'pack_select_other_pack': 'images/pack_select_other_booster_packs.jpg',
+    'pack_select_expansion': 'images/pack_select_expansion.jpg',
     'pack_select_package_0': 'images/pack_select_package_0.jpg',
     'pack_select_package_2': 'images/pack_select_package_2.jpg',
     'pack_select_package_3': 'images/pack_select_package_3.jpg',
+    'pack_select_package_4': 'images/pack_select_package_4.jpg',
     'pack_select_pack_charizard': 'images/pack_select_pack_charizard.jpg',
     'pack_select_pack_mewtwo': 'images/pack_select_pack_mewtwo.jpg',
     'pack_select_pack_pikachu': 'images/pack_select_pack_pikachu.jpg',
@@ -59,6 +61,7 @@ templates = {
     'pack_select_pack_dialga': 'images/pack_select_pack_dialga.jpg',
     'pack_select_pack_palkia': 'images/pack_select_pack_palkia.jpg',
     'pack_select_pack_arceus': 'images/pack_select_pack_arceus.jpg',
+    'pack_select_pack_shiny': 'images/pack_select_pack_shiny.jpg',
     'pack_open': 'images/pack_open.jpg',
     'pack_open_slice': 'images/pack_open_slice.jpg',
     'gifts': 'images/gifts.jpg',
@@ -124,7 +127,8 @@ card_pack_to_template_key = {
     'mew':'pack_select_pack_mew',
     'dialga':'pack_select_pack_dialga',
     'palkia':'pack_select_pack_palkia',
-    'arceus':'pack_select_pack_arceus'
+    'arceus':'pack_select_pack_arceus',
+    'shiny':'pack_select_pack_shiny',
 }
 
 package_to_template_key = {
@@ -134,7 +138,8 @@ package_to_template_key = {
     'mew': 'pack_select_package_0',
     'dialga': 'pack_select_package_2',
     'palkia': 'pack_select_package_2',
-    'arceus': 'pack_select_package_3'
+    'arceus': 'pack_select_package_3',
+    'shiny': 'pack_select_package_4',
 }
 
 battle_diff_to_template_key = {
@@ -300,14 +305,14 @@ def check_after_start_game(sct, monitor):
     while count < max_attempts:
         home = check_at_home(sct, monitor)
         if home is not None and len(home) > 0:
-            sleep(0.2)
+            sleep(1)
             return None
 
         pokemon_tcgp_update_data = check_template(sct, monitor, 'pokemon_tcgp_update_data')
         if pokemon_tcgp_update_data is not None and len(pokemon_tcgp_update_data) > 0:
             print('Have Pokemon TCGP update')
             click_ok(sct, monitor)
-            sleep(3)
+            sleep(60)
             restart_script()
             return None
 
@@ -382,6 +387,15 @@ def open_booster_pack(sct, monitor):
     print('\nOpening Pack')
     sleep(1)
     click_template(sct, monitor, 'pack_select_other_pack')
+
+    select_expansion_screen = finding_template(sct, monitor, 'pack_select_expansion')
+    if select_expansion_screen is not None and len(select_expansion_screen) > 0:
+        print('At select expansion screen')
+        for _ in range(2):
+            select_expansion = get_click_location(select_expansion_screen)
+            pyautogui.moveTo(select_expansion)
+            pyautogui.scroll(-1)
+            sleep(0.5)
 
     card_pack = select_card_pack(desired_pack)
     # card_pack = card_pack_to_template_key.get(desired_pack)
@@ -556,12 +570,19 @@ def wonder_pick(sct, monitor):
                     pick_random_card(sct, monitor)
                     click_tap_to_proceed(sct, monitor)
                     sleep(3)
+
+                    congrat_screen = check_template(sct, monitor, 'task_tap_proceed') # collection milestones
+                    if congrat_screen is not None and len(congrat_screen) > 0:
+                        click_tap_to_proceed(sct, monitor)
+                        sleep(3)
+
                     new_cards = check_template(sct, monitor, 'task_click_skip')
                     if new_cards is not None and len(new_cards) > 0:
                         for _ in range(2):
                             click_skip(sct, monitor)
                             sleep(1)
                         click_next(sct, monitor)
+
                     click_tap_to_proceed(sct, monitor)
                     sleep(1)
                 wonder_pick_screen = finding_template(sct, monitor, 'wonder_pick_screen')
@@ -776,6 +797,7 @@ def exit_bluestacks(sct, monitor):
         print('Failed to find BlueStacks close button')
         return
     move_to_click(close)
+    sys.exit()
 
 
 def close_bluestacks_ad(sct, monitor):
