@@ -6,7 +6,6 @@ A Python script designed to automate daily tasks in the Pokemon TCG Pocket using
 Bluestacks settings:
     display resolution: 1600x900
     dpi 320
-
 '''
 
 from opencv_utils import match_template, get_click_location
@@ -20,11 +19,15 @@ import subprocess
 import sys
 from time import sleep
 import win32gui
+import numpy as np
 
+
+# charizard, mewtwo, pikachu, mew, dialga, palkia, arceus, shiny
+# desired_pack = 'shiny'
+desired_pack = random.choice(
+    ['charizard', 'mewtwo', 'pikachu', 'mew', 'dialga', 'palkia', 'arceus', 'shiny'])
 
 enable_check_pack_screen = True
-desired_pack = 'shiny' # charizard, mewtwo, pikachu, mew, dialga, palkia, arceus, shiny
-# desired_pack = random.choice(['mew', 'dialga', 'palkia', 'arceus', 'shiny']) # charizard, mewtwo, pikachu, mew, dialga, palkia, arceus, shiny
 enable_wonder_pick = True
 enable_wonder_pick_event = True
 enable_check_level_up = True
@@ -33,7 +36,7 @@ enable_battle = True
 desired_battle_diff = 'expert' # beginner, intermediate, advanced, expert
 battle_check_time = 240 # sleep time before battle_check; only 0 is False.
 enable_battle_defeat_redo = True
-enable_battle_victory_repeat = False
+enable_battle_victory_repeat = True
 
 enable_exit_app = True
 
@@ -75,6 +78,7 @@ templates = {
     'wonder_pick': 'images/wonder_pick.jpg',
     'wonder_pick_screen': 'images/wonder_pick_screen.jpg',
     'wonder_pick_bonus': 'images/wonder_pick_bonus.jpg',
+    'wonder_pick_bonus_item': 'images/wonder_pick_bonus_item.jpg',
     'wonder_pick_chansey': 'images/wonder_pick_chansey.jpg',
     'wonder_pick_rare': 'images/wonder_pick_rare.jpg',
     'wonder_pick_no_stamina': 'images/wonder_pick_no_stamina.jpg',
@@ -83,8 +87,11 @@ templates = {
     'missions_0': 'images/missions_0.jpg',
     'missions_1': 'images/missions_1.jpg',
     'missions_complete_all': 'images/missions_complete_all.jpg',
+    'missions_complete': 'images/missions_complete.jpg',
     'missions_non_daily_complete': 'images/missions_non_daily_complete.jpg',
     'missions_claim': 'images/missions_claim.jpg',
+    'missions_themed_collections': 'images/missions_themed_collections.jpg',
+    'missions_themed_collections_complete': 'images/missions_themed_collections_complete.jpg',
     'battle': 'images/battle.jpg',
     'battle_solo_0': 'images/battle_solo_0.jpg',
     'battle_solo_1': 'images/battle_solo_1.jpg',
@@ -108,6 +115,7 @@ templates = {
     'task_click_ok': 'images/task_click_ok.jpg',
     'task_click_skip': 'images/task_click_skip.jpg',
     'task_click_x': 'images/task_click_x.jpg',
+    'task_click_back': 'images/task_click_back.jpg',
     'task_tap_hold': 'images/task_tap_hold.jpg',
     'task_tap_proceed': 'images/task_tap_proceed.jpg',
     'bluestacks_x': 'images/bluestacks_x.jpg',
@@ -182,6 +190,9 @@ def main():
             click_home(sct, monitor)
             if enable_check_level_up and battle_victory:
                 check_level_up(sct, monitor)
+            have_missions = check_missions(sct, monitor)
+            if have_missions:
+                missions(sct, monitor)
         if enable_exit_app:
             exit_bluestacks(sct, monitor)
         print('\nEnding Auto Pokemon TCGP\n')
@@ -526,7 +537,9 @@ def wonder_pick(sct, monitor):
             print(f'Found {len(cards)} card to choose')
             print(f'Cards are: {cards}')
             card = random.choice(cards)
-            print(f'Card choice is {card}')
+            card_index = np.where(np.all(cards == card, axis=1))[0][0]
+            print(f'Card choice is #{card_index+1}: {card}')
+            # print(f'Card choice is {card}')
             move_to_click([card])
             sleep(5)
         else:
@@ -548,6 +561,7 @@ def wonder_pick(sct, monitor):
                     print('Skipping event pick')
                     event_loc = get_click_location(event_pick)
                     pyautogui.moveTo(event_loc)
+                    sleep(0.25)
                     pyautogui.scroll(-1)
                     continue
                 move_to_click(event_pick)
@@ -568,23 +582,31 @@ def wonder_pick(sct, monitor):
                 wonder_pick_a_card_screen = finding_template(sct, monitor, 'wonder_pick_a_card_screen')
                 if wonder_pick_a_card_screen is not None and len(wonder_pick_a_card_screen) > 0:
                     pick_random_card(sct, monitor)
-                    click_tap_to_proceed(sct, monitor)
-                    sleep(3)
+                    sleep(1.5)
 
-                    congrat_screen = check_template(sct, monitor, 'task_tap_proceed') # collection milestones
-                    if congrat_screen is not None and len(congrat_screen) > 0:
+                    item = check_template(sct, monitor, 'wonder_pick_bonus_item')
+                    if "wonder_pick_bonus" in pick and item is not None and len(item) > 0:
+                        for _ in range(2):
+                            click_tap_to_proceed(sct, monitor)
+                            sleep(0.5)
+                    else:
                         click_tap_to_proceed(sct, monitor)
                         sleep(3)
 
-                    new_cards = check_template(sct, monitor, 'task_click_skip')
-                    if new_cards is not None and len(new_cards) > 0:
-                        for _ in range(2):
-                            click_skip(sct, monitor)
-                            sleep(1)
-                        click_next(sct, monitor)
+                        congrat_screen = check_template(sct, monitor, 'task_tap_proceed') # collection milestones
+                        if congrat_screen is not None and len(congrat_screen) > 0:
+                            click_tap_to_proceed(sct, monitor)
+                            sleep(3)
 
-                    click_tap_to_proceed(sct, monitor)
-                    sleep(1)
+                        new_cards = check_template(sct, monitor, 'task_click_skip')
+                        if new_cards is not None and len(new_cards) > 0:
+                            for _ in range(2):
+                                click_skip(sct, monitor)
+                                sleep(1)
+                            click_next(sct, monitor)
+
+                        click_tap_to_proceed(sct, monitor)
+                        sleep(1)
                 wonder_pick_screen = finding_template(sct, monitor, 'wonder_pick_screen')
                 if wonder_pick_screen is not None and len(wonder_pick_screen) > 0:
                     pass # make sure it's at screen before click_home
@@ -610,9 +632,9 @@ def shop(sct, monitor):
 
 
 def missions(sct, monitor):
-    print('\nStarting Mission clear')
+    print('\nOpening Mission')
 
-    complete_all = finding_template(sct, monitor, 'missions_complete_all', 5)
+    complete_all = finding_template(sct, monitor, 'missions_complete_all', 5, threshold=0.99)
     if complete_all is not None and len(complete_all) > 0:
         move_to_click(complete_all)
         sleep(5)
@@ -630,12 +652,37 @@ def missions(sct, monitor):
         sleep(1)
         click_ok(sct, monitor)
         sleep(1)
+
+    themed_collection = check_template(sct, monitor, 'missions_themed_collections')
+    if themed_collection is not None and len(themed_collection) > 0:
+        move_to_click(themed_collection)
+        complete = finding_template(sct, monitor, 'missions_complete')
+        while complete:
+            move_to_click(complete)
+            themed_complete = finding_template(sct, monitor, 'missions_themed_collections_complete')
+            move_to_click(themed_complete)
+            click_ok(sct, monitor)
+            sleep(1)
+            complete = check_template(sct, monitor, 'missions_complete')
+        click_back(sct, monitor)
+
+    complete = check_template(sct, monitor, 'missions_complete', threshold=0.90)
+    if complete is not None and len(complete) > 0:
+        while complete is not None and len(complete) > 0:
+            move_to_click(complete)
+            final_complete = finding_template(sct, monitor, 'missions_themed_collections_complete')
+            move_to_click(final_complete)
+            for _ in range(2):
+                click_ok(sct, monitor)
+                # sleep(1)
+            complete = check_template(sct, monitor, 'missions_complete')
+
     click_x(sct, monitor)
     print('Missions clear')
 
 
 def battle_solo(sct, monitor):
-    print('\nStarting Battle')
+    print('\nOpening Battle')
     battle = finding_template(sct, monitor, 'battle')
     if battle is not None and len(battle) > 0:
         move_to_click(battle)
@@ -846,6 +893,13 @@ def click_x(sct, monitor):
     move_to_click(x)
     sleep(1)
     return x
+
+
+def click_back(sct, monitor):
+    back = finding_template(sct, monitor, 'task_click_back')
+    move_to_click(back)
+    sleep(1)
+    return back
 
 
 '''
