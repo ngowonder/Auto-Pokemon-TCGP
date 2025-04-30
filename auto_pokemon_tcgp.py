@@ -662,7 +662,7 @@ def shop(sct, monitor):
 def missions(sct, monitor):
     print('\nOpening Mission')
 
-    complete_all = finding_template(sct, monitor, 'missions_complete_all', 5, threshold=0.99)
+    complete_all = finding_template(sct, monitor, 'missions_complete_all', 3, threshold=0.99)
     if complete_all is not None and len(complete_all) > 0:
         move_to_click(complete_all)
         sleep(5)
@@ -690,7 +690,7 @@ def missions(sct, monitor):
             themed_complete = finding_template(sct, monitor, 'missions_themed_collections_complete')
             move_to_click(themed_complete)
             click_ok(sct, monitor)
-            sleep(1)
+            sleep(3)
             complete = check_template(sct, monitor, 'missions_complete')
         click_back(sct, monitor)
 
@@ -701,8 +701,9 @@ def missions(sct, monitor):
             final_complete = finding_template(sct, monitor, 'missions_themed_collections_complete')
             move_to_click(final_complete)
             for _ in range(2):
+                sleep(1)
                 click_ok(sct, monitor)
-                # sleep(1)
+            sleep(3)
             complete = check_template(sct, monitor, 'missions_complete')
 
     click_x(sct, monitor)
