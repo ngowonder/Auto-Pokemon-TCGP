@@ -1,0 +1,6 @@
+opencv-python
+mss
+numpy
+pyautogui
+psutil
+pywin32

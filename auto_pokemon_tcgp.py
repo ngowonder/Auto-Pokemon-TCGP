@@ -22,10 +22,11 @@ import win32gui
 import numpy as np
 
 
-# charizard, mewtwo, pikachu, mew, dialga, palkia, arceus, shiny
+# charizard, mewtwo, pikachu, mew, dialga, palkia, arceus, shiny, lunala, solgaleo
 # desired_pack = 'shiny'
-desired_pack = random.choice(
-    ['charizard', 'mewtwo', 'pikachu', 'mew', 'dialga', 'palkia', 'arceus', 'shiny'])
+'''desired_pack = random.choice(
+    ['charizard', 'mewtwo', 'pikachu', 'mew', 'dialga', 'palkia', 'arceus', 'shiny', 'lunala', 'solgaleo'])'''
+desired_pack = random.choice(['lunala', 'solgaleo',])
 
 enable_check_pack_screen = True
 enable_wonder_pick = True
@@ -65,6 +66,8 @@ templates = {
     'pack_select_pack_palkia': 'images/pack_select_pack_palkia.jpg',
     'pack_select_pack_arceus': 'images/pack_select_pack_arceus.jpg',
     'pack_select_pack_shiny': 'images/pack_select_pack_shiny.jpg',
+    'pack_select_pack_lunala': 'images/pack_select_pack_lunala.jpg',
+    'pack_select_pack_solgaleo': 'images/pack_select_pack_solgaleo.jpg',
     'pack_open': 'images/pack_open.jpg',
     'pack_open_slice': 'images/pack_open_slice.jpg',
     'gifts': 'images/gifts.jpg',
@@ -129,14 +132,16 @@ templates = {
 }
 
 card_pack_to_template_key = {
-    'charizard':'pack_select_pack_charizard',
-    'mewtwo':'pack_select_pack_mewtwo',
-    'pikachu':'pack_select_pack_pikachu',
-    'mew':'pack_select_pack_mew',
-    'dialga':'pack_select_pack_dialga',
-    'palkia':'pack_select_pack_palkia',
-    'arceus':'pack_select_pack_arceus',
-    'shiny':'pack_select_pack_shiny',
+    'charizard': 'pack_select_pack_charizard',
+    'mewtwo': 'pack_select_pack_mewtwo',
+    'pikachu': 'pack_select_pack_pikachu',
+    'mew': 'pack_select_pack_mew',
+    'dialga': 'pack_select_pack_dialga',
+    'palkia': 'pack_select_pack_palkia',
+    'arceus': 'pack_select_pack_arceus',
+    'shiny': 'pack_select_pack_shiny',
+    'lunala': 'pack_select_pack_lunala',
+    'solgaleo': 'pack_select_pack_solgaleo',
 }
 
 package_to_template_key = {
@@ -148,6 +153,8 @@ package_to_template_key = {
     'palkia': 'pack_select_package_2',
     'arceus': 'pack_select_package_3',
     'shiny': 'pack_select_package_4',
+    'lunala': 'pack_select_package_0',
+    'solgaleo': 'pack_select_package_0',
 }
 
 battle_diff_to_template_key = {
@@ -355,6 +362,9 @@ def check_booster_pack_screen(sct, monitor):
     pack = finding_template(sct, monitor, 'pack', 10)
     if pack is not None and len(pack) > 0:
         move_to_click(pack)
+    else:
+        print('Pack not found at home screen')
+        return
 
     pack_screen = finding_template(sct, monitor, 'pack_select_other_pack')
     if pack_screen is not None and len(pack_screen) > 0:
@@ -400,26 +410,43 @@ def open_booster_pack(sct, monitor):
     click_template(sct, monitor, 'pack_select_other_pack')
 
     select_expansion_screen = finding_template(sct, monitor, 'pack_select_expansion')
-    if select_expansion_screen is not None and len(select_expansion_screen) > 0:
-        print('At select expansion screen')
-        for _ in range(2):
-            select_expansion = get_click_location(select_expansion_screen)
-            pyautogui.moveTo(select_expansion)
-            pyautogui.scroll(-1)
-            sleep(0.5)
 
-    card_pack = select_card_pack(desired_pack)
-    # card_pack = card_pack_to_template_key.get(desired_pack)
-    if card_pack is not None:
-        click_template(sct, monitor, card_pack) # from expansion pack screen
-        sleep(2)
+    if select_expansion_screen is None or len(select_expansion_screen) == 0:
+        print("Select expansion screen not found. Skipping pack selection.")
+        click_home(sct, monitor)
+        return
+
+    desired_pack_template = select_card_pack(desired_pack)
+
+    if not desired_pack_template:
+        print(f"Desired pack '{desired_pack}' not found in template mapping.")
+        click_home(sct, monitor)
+        return
+
+    scroll_attempts = 0
+    max_scroll_attempts = 5
+    while scroll_attempts < max_scroll_attempts:
+        # Check for the desired pack on screen
+        desired_pack_loc = check_template(
+            sct, monitor, desired_pack_template, threshold=0.8
+        )
+
+        if desired_pack_loc is not None and len(desired_pack_loc) > 0:
+            # Found desired pack
+            move_to_click(desired_pack_loc)
+            sleep(2)
+            break
+        else:
+            # Scroll down to reveal more packs
+            pyautogui.scroll(-1)
+            sleep(1)
+            scroll_attempts += 1
     else:
-        print('Error in select_card_pack')
+        print(f"Failed to find pack '{desired_pack}' after {max_scroll_attempts} attempts.")
         click_home(sct, monitor)
         return
 
     package = select_package(desired_pack)
-    # package = package_to_template_key.get(desired_pack)
     if package is not None:
         click_template(sct, monitor, package) # card package
     else:
@@ -605,6 +632,7 @@ def wonder_pick(sct, monitor):
                                 sleep(1)
                             click_next(sct, monitor)
 
+                        sleep(1)
                         click_tap_to_proceed(sct, monitor)
                         sleep(1)
                 wonder_pick_screen = finding_template(sct, monitor, 'wonder_pick_screen')
