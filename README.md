@@ -24,11 +24,19 @@ Auto Pokemon TCG Pocket is designed to automate daily tasks in the Pokemon TCG P
 Python version 3.09+
 
 
-## Bluestacks settings
+## Bluestacks Display settings
 
 display resolution: 1600x900
 
 dpi: 320
+
+interface scaling: 100% Default
+
+### Recommended
+
+enable "Fix Window Size"
+
+- Menu Button (next to the Minimize button, top of player), so the BlueStack Player doesn't accidentally change size
 
 Note: your experience may vary based on computer specs.
 
