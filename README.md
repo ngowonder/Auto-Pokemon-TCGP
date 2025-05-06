@@ -32,9 +32,7 @@ dpi: 320
 
 interface scaling: 100% Default
 
-### Recommended
-
-enable "Fix Window Size"
+## Enable "Fix Window Size"
 
 - Menu Button (next to the Minimize button, top of player), so the BlueStack Player doesn't accidentally change size
 
