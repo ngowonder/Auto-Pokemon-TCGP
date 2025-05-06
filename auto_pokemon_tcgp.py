@@ -3,9 +3,13 @@ Auto Pokemon TCG Pocket
 
 A Python script designed to automate daily tasks in the Pokemon TCG Pocket using Bluestacks.
 
-Bluestacks settings:
+Bluestacks Display settings:
     display resolution: 1600x900
     dpi 320
+    interface scaling: 100% Default
+
+Enable "Fix Window Size"
+    Menu Button (next to the Minimize button, top of player), so the BlueStack Player doesn't accidentally change size
 '''
 
 from opencv_utils import match_template, get_click_location
@@ -41,8 +45,12 @@ enable_battle_victory_repeat = True
 
 enable_exit_app = True
 
+
+
+
 EXE_PATH = r'"C:\Program Files\BlueStacks_nxt\HD-Player.exe" --instance Pie64 --cmd launchApp --package "jp.pokemon.pokemontcgp" --source desktop_shortcut'
-HWND = win32gui.FindWindow(None, 'BlueStacks App Player')
+# HWND = win32gui.FindWindow(None, 'BlueStacks App Player')
+HWND = None # Global HWND variable
 PROCESS_NAME = ['BlueStacks', 'BlueStacks App Player', 'HD-Player',]
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -167,6 +175,7 @@ battle_diff_to_template_key = {
 
 def main():
     print('\nStarting Auto Pokemon TCGP...\n')
+    initialize_hwnd()
     with mss() as sct:
         monitor = sct.monitors[1]
         launch_game()
@@ -203,6 +212,26 @@ def main():
         if enable_exit_app:
             exit_bluestacks(sct, monitor)
         print('\nEnding Auto Pokemon TCGP\n')
+
+
+def find_bluestacks_window():
+    def enum_windows(hwnd, results):
+        if 'BlueStacks' in win32gui.GetWindowText(hwnd):
+            results.append(hwnd)
+
+    hwnds = []
+    win32gui.EnumWindows(enum_windows, hwnds)
+    return hwnds
+
+
+def initialize_hwnd():
+    global HWND
+    hwnds = find_bluestacks_window()
+    if hwnds:
+        HWND = hwnds[0]
+        # print("BlueStacks window found.")
+    else:
+        print("BlueStacks window not found.")
 
 
 def launch_game():
@@ -618,7 +647,7 @@ def wonder_pick(sct, monitor):
                             sleep(0.5)
                     else:
                         click_tap_to_proceed(sct, monitor)
-                        sleep(3)
+                        sleep(2)
 
                         congrat_screen = check_template(sct, monitor, 'task_tap_proceed') # collection milestones
                         if congrat_screen is not None and len(congrat_screen) > 0:
@@ -685,6 +714,7 @@ def missions(sct, monitor):
     if themed_collection is not None and len(themed_collection) > 0:
         move_to_click(themed_collection)
         complete = finding_template(sct, monitor, 'missions_complete')
+        sleep(1)
         while complete:
             move_to_click(complete)
             themed_complete = finding_template(sct, monitor, 'missions_themed_collections_complete')
@@ -745,7 +775,7 @@ def battle_solo(sct, monitor):
 
     battle_count = 0
     while True:
-        sleep(1.5)
+        sleep(3)
         event_stamina = check_template(sct, monitor, 'battle_solo_stamina')
         if event_stamina is not None and len(event_stamina) > 0:
             pass
