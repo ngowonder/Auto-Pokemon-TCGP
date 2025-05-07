@@ -45,9 +45,6 @@ enable_battle_victory_repeat = True
 
 enable_exit_app = True
 
-
-
-
 EXE_PATH = r'"C:\Program Files\BlueStacks_nxt\HD-Player.exe" --instance Pie64 --cmd launchApp --package "jp.pokemon.pokemontcgp" --source desktop_shortcut'
 # HWND = win32gui.FindWindow(None, 'BlueStacks App Player')
 HWND = None # Global HWND variable
@@ -463,7 +460,6 @@ def open_booster_pack(sct, monitor):
         if desired_pack_loc is not None and len(desired_pack_loc) > 0:
             # Found desired pack
             move_to_click(desired_pack_loc)
-            sleep(2)
             break
         else:
             # Scroll down to reveal more packs
@@ -475,6 +471,7 @@ def open_booster_pack(sct, monitor):
         click_home(sct, monitor)
         return
 
+    sleep(3)
     package = select_package(desired_pack)
     if package is not None:
         click_template(sct, monitor, package) # card package
