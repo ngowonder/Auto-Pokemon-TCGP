@@ -52,3 +52,5 @@ Run script on either Start Game screen or the Home screen
 
 or
 - `py -m auto_pokemon_tcgp`
+
+Make changes to `desired_pack` (Line 30-33) to open the card packs you want. 
