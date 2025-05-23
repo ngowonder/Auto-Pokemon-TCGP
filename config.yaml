@@ -1,0 +1,51 @@
+# Config for auto_pokemon_tcgp.py
+# Refer to auto_pokemon_tcgp for the complete list of desired_packs
+# YAML supports Block-style or Flow-style lists
+
+
+# Configuration for the desired pack selection
+# Flow-style lists
+desired_packs: [
+    "charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo"
+]
+
+# Block-style (uncomment to use)
+# desired_packs:
+#   - "charizard"
+#   - "mewtwo"
+#   - "pikachu"
+#   - "mew"
+#   - "dialga"
+#   - "palkia"
+#   - "arceus"
+#   - "shiny"
+#   - "lunala"
+#   - "solgaleo"
+
+# Block-style (uncomment to use)
+# desired_packs: [
+#   "charizard",
+#   "mewtwo",
+#   "pikachu",
+#   "mew",
+#   "dialga",
+#   "palkia",
+#   "arceus",
+#   "shiny",
+#   "lunala",
+#   "solgaleo"
+# ]
+
+# Control flags for various features
+enable_check_pack_screen: true
+enable_wonder_pick: true
+enable_wonder_pick_event: true # Enable or disable wonder pick special events (e.g., Chansey, Rare)
+enable_check_level_up: true
+enable_exit_app: true
+
+# Battle settings
+enable_event_battle: true
+desired_battle_difficulty: expert  # Difficulty choices: beginner, intermediate, advanced, expert
+battle_check_time: 240  # Seconds to sleep before battle check (0 is False for no sleep)
+enable_battle_defeat_redo: true # Redo battle on defeat
+enable_battle_victory_repeat: true # Repeat battle after victory

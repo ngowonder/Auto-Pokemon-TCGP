@@ -4,3 +4,4 @@ numpy
 pyautogui
 psutil
 pywin32
+pyyaml

@@ -1,7 +1,7 @@
-'''
+"""
 Auto Pokemon TCG Pocket
 
-A Python script designed to automate daily tasks in the Pokemon TCG Pocket using Bluestacks.
+An OpenCV Python script designed to automate daily tasks in the Pokemon TCG Pocket using BlueStacks.
 
 Bluestacks Display settings:
     display resolution: 1600x900
@@ -10,7 +10,10 @@ Bluestacks Display settings:
 
 Enable "Fix Window Size"
     Menu Button (next to the Minimize button, top of player), so the BlueStack Player doesn't accidentally change size
-'''
+
+# desired_pack choices for config.yaml:
+"charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo"
+"""
 
 from opencv_utils import match_template, get_click_location
 from mss import mss
@@ -24,29 +27,28 @@ import sys
 from time import sleep
 import win32gui
 import numpy as np
+import yaml
 
 
-# charizard, mewtwo, pikachu, mew, dialga, palkia, arceus, shiny, lunala, solgaleo
-# desired_pack = 'shiny'
-'''desired_pack = random.choice(
-    ['charizard', 'mewtwo', 'pikachu', 'mew', 'dialga', 'palkia', 'arceus', 'shiny', 'lunala', 'solgaleo'])'''
-desired_pack = random.choice(['lunala', 'solgaleo',])
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.yaml")
+with open(CONFIG_PATH, "r") as f:
+    config = yaml.safe_load(f)
 
-enable_check_pack_screen = True
-enable_wonder_pick = True
-enable_wonder_pick_event = True
-enable_check_level_up = True
+# Replace hardcoded values with config values
+desired_pack = random.choice(config["desired_packs"])
+enable_check_pack_screen = config["enable_check_pack_screen"]
+enable_wonder_pick = config["enable_wonder_pick"]
+enable_wonder_pick_event = config["enable_wonder_pick_event"]
+enable_check_level_up = config["enable_check_level_up"]
+enable_exit_app = config["enable_exit_app"]
 
-enable_battle = True
-desired_battle_diff = 'expert' # beginner, intermediate, advanced, expert
-battle_check_time = 240 # sleep time before battle_check; only 0 is False.
-enable_battle_defeat_redo = True
-enable_battle_victory_repeat = True
-
-enable_exit_app = True
+enable_event_battle = config["enable_event_battle"]
+desired_battle_diff = config["desired_battle_difficulty"]
+battle_check_time = config["battle_check_time"]
+enable_battle_defeat_redo = config["enable_battle_defeat_redo"]
+enable_battle_victory_repeat = config["enable_battle_victory_repeat"]
 
 EXE_PATH = r'"C:\Program Files\BlueStacks_nxt\HD-Player.exe" --instance Pie64 --cmd launchApp --package "jp.pokemon.pokemontcgp" --source desktop_shortcut'
-# HWND = win32gui.FindWindow(None, 'BlueStacks App Player')
 HWND = None # Global HWND variable
 PROCESS_NAME = ['BlueStacks', 'BlueStacks App Player', 'HD-Player',]
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -198,7 +200,7 @@ def main():
         have_missions = check_missions(sct, monitor)
         if have_missions:
             missions(sct, monitor)
-        if enable_battle:
+        if enable_event_battle:
             battle_victory = battle_solo(sct, monitor)
             click_home(sct, monitor)
             if enable_check_level_up and battle_victory:
@@ -226,9 +228,9 @@ def initialize_hwnd():
     hwnds = find_bluestacks_window()
     if hwnds:
         HWND = hwnds[0]
-        # print("BlueStacks window found.")
+        # print("BlueStacks window found")
     else:
-        print("BlueStacks window not found.")
+        print("BlueStacks window not found")
 
 
 def launch_game():
@@ -242,7 +244,7 @@ def launch_game():
         return None
 
     if not is_process_running():
-        print('None of the BlueStacks processes are running. Launching...')
+        print('None of the BlueStacks processes are running. Launching BlueStacks...')
         try:
             subprocess.Popen(EXE_PATH, shell=False) # launch BlueStacks
             while True:
@@ -250,7 +252,6 @@ def launch_game():
                 if is_process_running():
                     break
             sleep(3)
-            # win32gui.SetForegroundWindow(HWND)
 
             '''workaround for win32gui.SetForegroundWindow() to work
             runs new py script and exit the old one'''
@@ -298,16 +299,6 @@ def start_game(sct, monitor):
 def check_at_home(sct, monitor):
     return check_template(sct, monitor, 'at_home')
 
-'''
-def check_at_home(sct, monitor):
-    templates = ['home', 'at_home']
-    for template in templates:
-        at_home = check_template(sct, monitor, template)
-        if at_home is not None and len(at_home) > 0:
-            if template = 'home'
-                return False
-            return True
-'''
 
 def check_gifts(sct, monitor):
     have_gifts = check_template(sct, monitor, 'gifts', threshold=0.95)
@@ -576,7 +567,6 @@ def wonder_pick(sct, monitor):
         template_key = 'wonder_pick_card_back'
         template_path = templates.get(template_key)
 
-        # template = cv2.imread(template)
         template = cv2.imread(os.path.join(SCRIPT_DIR, template_path))
         if template is None:
             print(f"Failed to load template '{template_key}' from {template_path}")
@@ -592,14 +582,19 @@ def wonder_pick(sct, monitor):
             card = random.choice(cards)
             card_index = np.where(np.all(cards == card, axis=1))[0][0]
             print(f'Card choice is #{card_index+1}: {card}')
-            # print(f'Card choice is {card}')
             move_to_click([card])
             sleep(5)
         else:
             print('No card backs found to pick')
 
     print('\nOpening Wonder Pick')
-    click_template(sct, monitor, 'wonder_pick')
+
+    wonder_pick = finding_template(sct, monitor, 'wonder_pick', max_attempts=10)
+    if wonder_pick is not None and len(wonder_pick) > 0:
+        move_to_click(wonder_pick)
+    else:
+        print('Wonder Pick not found at home screen')
+        return
 
     wonder_pick_screen = finding_template(sct, monitor, 'wonder_pick_screen')
     if wonder_pick_screen is not None and len(wonder_pick_screen) > 0:
@@ -667,6 +662,11 @@ def wonder_pick(sct, monitor):
             else:
                 print(f"Template '{pick}' not found")
 
+    else:
+        print("Wonder Pick screen not found. Return home")
+        click_home(sct, monitor)
+        return
+
     click_home(sct, monitor)
     return
 
@@ -688,7 +688,7 @@ def shop(sct, monitor):
 def missions(sct, monitor):
     print('\nOpening Mission')
 
-    complete_all = finding_template(sct, monitor, 'missions_complete_all', 3, threshold=0.99)
+    complete_all = finding_template(sct, monitor, 'missions_complete_all', max_attempts=3, threshold=0.99)
     if complete_all is not None and len(complete_all) > 0:
         move_to_click(complete_all)
         sleep(5)
@@ -799,7 +799,7 @@ def battle_solo(sct, monitor):
             sleep(3)
             return False
         if desired_battle_diff in ('advanced', 'expert'):
-            pyautogui.scroll(-5)
+            pyautogui.scroll(-10)
             sleep(1)
         diff = finding_template(sct, monitor, diff_key)
         if diff is not None and len(diff) > 0:
@@ -956,19 +956,6 @@ def click_back(sct, monitor):
     move_to_click(back)
     sleep(1)
     return back
-
-
-'''
-def click_tap_hold(sct, monitor):
-    tap_hold = finding_template(sct, monitor, 'task_tap_hold')
-    if tap_hold is not None and len(tap_hold) > 0:
-        loc = get_click_location(tap_hold)
-        pyautogui.moveTo(loc)
-        pyautogui.mouseDown()
-        sleep(10)
-        pyautogui.mouseUp()
-    return tap_hold
-'''
 
 
 def click_tap_hold(sct, monitor):
