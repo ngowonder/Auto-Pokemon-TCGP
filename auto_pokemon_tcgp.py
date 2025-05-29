@@ -12,7 +12,7 @@ Enable "Fix Window Size"
     Menu Button (next to the Minimize button, top of player), so the BlueStack Player doesn't accidentally change size
 
 # desired_pack choices for config.yaml:
-"charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo"
+"charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole"
 """
 
 from opencv_utils import match_template, get_click_location
@@ -75,8 +75,10 @@ templates = {
     'pack_select_pack_shiny': 'images/pack_select_pack_shiny.jpg',
     'pack_select_pack_lunala': 'images/pack_select_pack_lunala.jpg',
     'pack_select_pack_solgaleo': 'images/pack_select_pack_solgaleo.jpg',
+    'pack_select_pack_buzzwole': 'images/pack_select_pack_buzzwole.jpg',
     'pack_open': 'images/pack_open.jpg',
     'pack_open_slice': 'images/pack_open_slice.jpg',
+    'new_card_dex': 'images/new_card_dex.jpg',
     'gifts': 'images/gifts.jpg',
     'gifts_screen': 'images/gifts_screen.jpg',
     'gifts_claim_all': 'images/gifts_claim_all.jpg',
@@ -149,6 +151,7 @@ card_pack_to_template_key = {
     'shiny': 'pack_select_pack_shiny',
     'lunala': 'pack_select_pack_lunala',
     'solgaleo': 'pack_select_pack_solgaleo',
+    'buzzwole': 'pack_select_pack_buzzwole',
 }
 
 package_to_template_key = {
@@ -162,6 +165,7 @@ package_to_template_key = {
     'shiny': 'pack_select_package_4',
     'lunala': 'pack_select_package_0',
     'solgaleo': 'pack_select_package_0',
+    'buzzwole': 'pack_select_package_3',
 }
 
 battle_diff_to_template_key = {
@@ -634,10 +638,12 @@ def wonder_pick(sct, monitor):
 
                     item = check_template(sct, monitor, 'wonder_pick_bonus_item')
                     if "wonder_pick_bonus" in pick and item is not None and len(item) > 0:
+                        print("Wonder pick an item")
                         for _ in range(2):
                             click_tap_to_proceed(sct, monitor)
                             sleep(0.5)
                     else:
+                        print("Wonder pick a card")
                         click_tap_to_proceed(sct, monitor)
                         sleep(2)
 
@@ -788,6 +794,7 @@ def battle_solo(sct, monitor):
             print('At battle difficulty screen')
             diff_screen_loc = get_click_location(diff_screen)
             pyautogui.moveTo(diff_screen_loc)
+            sleep(0.25)
         else:
             print('Not at battle difficulty screen')
             sleep(3)
@@ -799,7 +806,7 @@ def battle_solo(sct, monitor):
             sleep(3)
             return False
         if desired_battle_diff in ('advanced', 'expert'):
-            pyautogui.scroll(-10)
+            pyautogui.scroll(-5)
             sleep(1)
         diff = finding_template(sct, monitor, diff_key)
         if diff is not None and len(diff) > 0:
