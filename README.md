@@ -54,4 +54,8 @@ Run script on either Start Game screen or the Home screen
 or
 - `py -m auto_pokemon_tcgp`
 
-Refer to auto_pokemon_tcgp.py for the complete list of desired_packs. 
+For the `desired_packs`, in the config.yaml use any readable style you like, and add/remove any strings.
+
+If you desire 1 specific pack, remove all but that one string.
+
+When new card packs get release, refer to `auto_pokemon_tcgp.py` for the complete list of `desired_packs`.
