@@ -61,10 +61,6 @@ templates = {
     'pack_can_open': 'images/pack_can_open.jpg',
     'pack_select_other_pack': 'images/pack_select_other_booster_packs.jpg',
     'pack_select_expansion': 'images/pack_select_expansion.jpg',
-    'pack_select_package_0': 'images/pack_select_package_0.jpg',
-    'pack_select_package_2': 'images/pack_select_package_2.jpg',
-    'pack_select_package_3': 'images/pack_select_package_3.jpg',
-    'pack_select_package_4': 'images/pack_select_package_4.jpg',
     'pack_select_pack_charizard': 'images/pack_select_pack_charizard.jpg',
     'pack_select_pack_mewtwo': 'images/pack_select_pack_mewtwo.jpg',
     'pack_select_pack_pikachu': 'images/pack_select_pack_pikachu.jpg',
@@ -76,6 +72,11 @@ templates = {
     'pack_select_pack_lunala': 'images/pack_select_pack_lunala.jpg',
     'pack_select_pack_solgaleo': 'images/pack_select_pack_solgaleo.jpg',
     'pack_select_pack_buzzwole': 'images/pack_select_pack_buzzwole.jpg',
+    'pack_select_package_0': 'images/pack_select_package_0.jpg',
+    'pack_select_package_2': 'images/pack_select_package_2.jpg',
+    'pack_select_package_3': 'images/pack_select_package_3.jpg',
+    'pack_select_package_4': 'images/pack_select_package_4.jpg',
+    'pack_select_package_6': 'images/pack_select_package_6.jpg',
     'pack_open': 'images/pack_open.jpg',
     'pack_open_slice': 'images/pack_open_slice.jpg',
     'new_card_dex': 'images/new_card_dex.jpg',
@@ -165,7 +166,7 @@ package_to_template_key = {
     'shiny': 'pack_select_package_4',
     'lunala': 'pack_select_package_0',
     'solgaleo': 'pack_select_package_0',
-    'buzzwole': 'pack_select_package_3',
+    'buzzwole': 'pack_select_package_6',
 }
 
 battle_diff_to_template_key = {
@@ -491,7 +492,7 @@ def open_pack(sct, monitor):
         open_pack_slice(sct, monitor)
         click_tap_hold(sct, monitor)
         click_next(sct, monitor)
-        sleep(5)
+        sleep(6) # TODO was 5
         open_slice = check_template(sct, monitor, 'pack_open_slice')
 
     congrat_screen = check_template(sct, monitor, 'task_tap_proceed') # collection milestones
@@ -499,7 +500,7 @@ def open_pack(sct, monitor):
         click_tap_to_proceed(sct, monitor)
         sleep(3)
 
-    new_cards = check_template(sct, monitor, 'task_click_skip') # if new cards, register to dex
+    new_cards = check_template(sct, monitor, 'new_card_dex') # if new cards, register to dex
     if new_cards is not None and len(new_cards) > 0:
         for _ in range(2):
             click_skip(sct, monitor)
@@ -652,14 +653,14 @@ def wonder_pick(sct, monitor):
                             click_tap_to_proceed(sct, monitor)
                             sleep(3)
 
-                        new_cards = check_template(sct, monitor, 'task_click_skip')
+                        new_cards = check_template(sct, monitor, 'new_card_dex')
                         if new_cards is not None and len(new_cards) > 0:
                             for _ in range(2):
                                 click_skip(sct, monitor)
                                 sleep(1)
                             click_next(sct, monitor)
 
-                        sleep(1)
+                        sleep(1.5)
                         click_tap_to_proceed(sct, monitor)
                         sleep(1)
                 wonder_pick_screen = finding_template(sct, monitor, 'wonder_pick_screen')
