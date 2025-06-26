@@ -12,7 +12,7 @@ Enable "Fix Window Size"
     Menu Button (next to the Minimize button, top of player), so the BlueStack Player doesn't accidentally change size
 
 # desired_pack choices for config.yaml:
-"charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole"
+"charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee"
 """
 
 from opencv_utils import match_template, get_click_location
@@ -72,11 +72,13 @@ templates = {
     'pack_select_pack_lunala': 'images/pack_select_pack_lunala.jpg',
     'pack_select_pack_solgaleo': 'images/pack_select_pack_solgaleo.jpg',
     'pack_select_pack_buzzwole': 'images/pack_select_pack_buzzwole.jpg',
+    'pack_select_pack_eevee': 'images/pack_select_pack_eevee.jpg',
     'pack_select_package_0': 'images/pack_select_package_0.jpg',
     'pack_select_package_2': 'images/pack_select_package_2.jpg',
     'pack_select_package_3': 'images/pack_select_package_3.jpg',
     'pack_select_package_4': 'images/pack_select_package_4.jpg',
     'pack_select_package_6': 'images/pack_select_package_6.jpg',
+    'pack_select_package_7': 'images/pack_select_package_7.jpg',
     'pack_open': 'images/pack_open.jpg',
     'pack_open_slice': 'images/pack_open_slice.jpg',
     'new_card_dex': 'images/new_card_dex.jpg',
@@ -153,6 +155,7 @@ card_pack_to_template_key = {
     'lunala': 'pack_select_pack_lunala',
     'solgaleo': 'pack_select_pack_solgaleo',
     'buzzwole': 'pack_select_pack_buzzwole',
+    'eevee': 'pack_select_pack_eevee',
 }
 
 package_to_template_key = {
@@ -167,6 +170,7 @@ package_to_template_key = {
     'lunala': 'pack_select_package_0',
     'solgaleo': 'pack_select_package_0',
     'buzzwole': 'pack_select_package_6',
+    'eevee': 'pack_select_package_7',
 }
 
 battle_diff_to_template_key = {
@@ -368,7 +372,7 @@ def check_after_start_game(sct, monitor):
 
 
 def check_level_up(sct, monitor):
-    sleep(5)
+    sleep(6)
     level_up = check_template(sct, monitor, 'level_up')
     if level_up is not None and len(level_up) > 0:
         click_tap_to_proceed(sct, monitor)
@@ -491,8 +495,9 @@ def open_pack(sct, monitor):
     while open_slice is not None and len(open_slice) > 0:
         open_pack_slice(sct, monitor)
         click_tap_hold(sct, monitor)
+        sleep(3)
         click_next(sct, monitor)
-        sleep(6) # TODO was 5
+        sleep(6)
         open_slice = check_template(sct, monitor, 'pack_open_slice')
 
     congrat_screen = check_template(sct, monitor, 'task_tap_proceed') # collection milestones
@@ -596,6 +601,7 @@ def wonder_pick(sct, monitor):
 
     wonder_pick = finding_template(sct, monitor, 'wonder_pick', max_attempts=10)
     if wonder_pick is not None and len(wonder_pick) > 0:
+        sleep(1)
         move_to_click(wonder_pick)
     else:
         print('Wonder Pick not found at home screen')
@@ -646,12 +652,14 @@ def wonder_pick(sct, monitor):
                     else:
                         print("Wonder pick a card")
                         click_tap_to_proceed(sct, monitor)
-                        sleep(2)
+                        sleep(3)
 
+                        """
                         congrat_screen = check_template(sct, monitor, 'task_tap_proceed') # collection milestones
                         if congrat_screen is not None and len(congrat_screen) > 0:
                             click_tap_to_proceed(sct, monitor)
                             sleep(3)
+                        """
 
                         new_cards = check_template(sct, monitor, 'new_card_dex')
                         if new_cards is not None and len(new_cards) > 0:
@@ -660,11 +668,12 @@ def wonder_pick(sct, monitor):
                                 sleep(1)
                             click_next(sct, monitor)
 
-                        sleep(1.5)
+                        sleep(2)
                         click_tap_to_proceed(sct, monitor)
                         sleep(1)
                 wonder_pick_screen = finding_template(sct, monitor, 'wonder_pick_screen')
                 if wonder_pick_screen is not None and len(wonder_pick_screen) > 0:
+                    sleep(1)
                     pass # make sure it's at screen before click_home
             else:
                 print(f"Template '{pick}' not found")
