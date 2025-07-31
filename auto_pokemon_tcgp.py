@@ -12,7 +12,7 @@ Enable "Fix Window Size"
     Menu Button (next to the Minimize button, top of player), so the BlueStack Player doesn't accidentally change size
 
 # desired_pack choices for config.yaml:
-"charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee"
+"charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee", "ho-oh", "lugia"
 """
 
 from opencv_utils import match_template, get_click_location
@@ -53,7 +53,7 @@ HWND = None # Global HWND variable
 PROCESS_NAME = ['BlueStacks', 'BlueStacks App Player', 'HD-Player',]
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-templates = {
+TEMPLATES = {
     'start_game': 'images/start_game.jpg',
     'at_home': 'images/home_1.jpg',
     'home': 'images/home_0.jpg',
@@ -73,12 +73,15 @@ templates = {
     'pack_select_pack_solgaleo': 'images/pack_select_pack_solgaleo.jpg',
     'pack_select_pack_buzzwole': 'images/pack_select_pack_buzzwole.jpg',
     'pack_select_pack_eevee': 'images/pack_select_pack_eevee.jpg',
+    'pack_select_pack_ho-oh': 'images/pack_select_pack_ho-oh.jpg',
+    'pack_select_pack_lugia': 'images/pack_select_pack_lugia.jpg',
     'pack_select_package_0': 'images/pack_select_package_0.jpg',
     'pack_select_package_2': 'images/pack_select_package_2.jpg',
     'pack_select_package_3': 'images/pack_select_package_3.jpg',
     'pack_select_package_4': 'images/pack_select_package_4.jpg',
     'pack_select_package_6': 'images/pack_select_package_6.jpg',
     'pack_select_package_7': 'images/pack_select_package_7.jpg',
+    'pack_select_package_8': 'images/pack_select_package_8.jpg',
     'pack_open': 'images/pack_open.jpg',
     'pack_open_slice': 'images/pack_open_slice.jpg',
     'new_card_dex': 'images/new_card_dex.jpg',
@@ -156,6 +159,8 @@ card_pack_to_template_key = {
     'solgaleo': 'pack_select_pack_solgaleo',
     'buzzwole': 'pack_select_pack_buzzwole',
     'eevee': 'pack_select_pack_eevee',
+    'ho-oh': 'pack_select_pack_ho-oh',
+    'lugia': 'pack_select_pack_lugia',
 }
 
 package_to_template_key = {
@@ -171,6 +176,8 @@ package_to_template_key = {
     'solgaleo': 'pack_select_package_0',
     'buzzwole': 'pack_select_package_6',
     'eevee': 'pack_select_package_7',
+    'ho-oh': 'pack_select_package_8',
+    'lugia': 'pack_select_package_8',
 }
 
 battle_diff_to_template_key = {
@@ -575,7 +582,7 @@ def gifts(sct, monitor):
 def wonder_pick(sct, monitor):
     def pick_random_card(sct, monitor):
         template_key = 'wonder_pick_card_back'
-        template_path = templates.get(template_key)
+        template_path = TEMPLATES.get(template_key)
 
         template = cv2.imread(os.path.join(SCRIPT_DIR, template_path))
         if template is None:
@@ -583,7 +590,7 @@ def wonder_pick(sct, monitor):
             return None
 
         image = sct.grab(monitor)
-        matched_image, cards = match_template(image, template, group_rectangles=True)
+        _, cards = match_template(image, template, group_rectangles=True)
         if len(cards) > 0:
             print(f"Template '{template_key}' found")
 
@@ -1009,7 +1016,7 @@ def click_template(sct, monitor, template_key):
 
 
 def check_template(sct, monitor, template_key, threshold=0.85):
-    template_path = templates.get(template_key)
+    template_path = TEMPLATES.get(template_key)
     if template_path is None:
         print(f"Template '{template_key}' not found")
         return None
@@ -1021,7 +1028,7 @@ def check_template(sct, monitor, template_key, threshold=0.85):
         return None
 
     image = sct.grab(monitor)
-    matched_image, boxes = match_template(image, template, threshold=threshold)
+    _, boxes = match_template(image, template, threshold=threshold)
     if len(boxes) > 0:
         print(f"Template '{template_key}' found")
         return boxes
@@ -1033,7 +1040,7 @@ def finding_template(sct, monitor, template_key, max_attempts=60, threshold=0.85
     max_attempts = 60
     sleep_duration = 0.5
 
-    template_path = templates.get(template_key)
+    template_path = TEMPLATES.get(template_key)
     if template_path is None:
         print(f"Template '{template_key}' not found")
         return None
@@ -1046,7 +1053,7 @@ def finding_template(sct, monitor, template_key, max_attempts=60, threshold=0.85
 
     while count < max_attempts:
         image = sct.grab(monitor)
-        matched_image, boxes = match_template(image, template, threshold=threshold)
+        _, boxes = match_template(image, template, threshold=threshold)
         if len(boxes) > 0:
             print(f"Template '{template_key}' found")
             return boxes
@@ -1055,6 +1062,21 @@ def finding_template(sct, monitor, template_key, max_attempts=60, threshold=0.85
 
     print(f"Error with template '{template_key}'")
     return None
+
+
+def is_template_matched(sct, monitor, template, method="check", max_attempts=60, threshold=0.85) -> bool:
+    if template is None or not isinstance(template, str):
+        raise ValueError("Error: template cannot be None and must be a string to TEMPLATE dict.")
+
+    if method == "check":
+        found_screen = check_template(sct, monitor, template, threshold)
+    elif method == "find":
+        found_screen = finding_template(sct, monitor, template, max_attempts, threshold)
+    else:
+        print('Error: method must be "check" or "find".')
+        return False
+
+    return found_screen is not None and len(found_screen) > 0
 
 
 def move_to_click(boxes):
