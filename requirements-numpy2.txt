@@ -1,0 +1,7 @@
+opencv-python>=4.10
+mss
+numpy>=2.0.1
+pyautogui
+psutil
+pywin32
+pyyaml
