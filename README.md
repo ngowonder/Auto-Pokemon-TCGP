@@ -25,6 +25,8 @@ Python version 3.09+
 
 ## Crucial Settings
 
+The template is sized to resolution 1600x900. The resolution and screen size has to match that.
+
 ### Bluestacks Display settings
 
 display resolution: 1600x900
