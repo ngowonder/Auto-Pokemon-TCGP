@@ -29,11 +29,11 @@ The template is sized to resolution 1600x900. The resolution and screen size has
 
 ### Bluestacks Display settings
 
-display resolution: 1600x900
+- display resolution: 1600x900
 
-dpi: 320
+- dpi: 320
 
-interface scaling: 100% Default
+- interface scaling: 100% Default
 
 ### Enable "Fix Window Size"
 
