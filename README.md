@@ -19,13 +19,14 @@ Auto Pokemon TCG Pocket is designed to automate daily tasks in the Pokemon TCG P
 
 ## Requirements
 
-[BlueStacks](https://www.bluestacks.com) (free Android emulator)
+- [BlueStacks](https://www.bluestacks.com) (free Android emulator)
 
-Python version 3.09+
+- Python version 3.09+
 
 ## Crucial Settings
 
-The template is sized to resolution 1600x900. The resolution and screen size has to match that.
+The templates is sized to resolution 1600x900. The resolution and screen size has to match that.
+The templates are in English.
 
 ### Bluestacks Display settings
 
@@ -38,6 +39,8 @@ The template is sized to resolution 1600x900. The resolution and screen size has
 ### Enable "Fix Window Size"
 
 - Menu Button (next to the Minimize button, top of player), so the BlueStack Player doesn't accidentally change size
+
+If your emulator change sizes, change it using this [solution](https://github.com/ngowonder/Auto-Pokemon-TCGP/issues/8#issuecomment-3180825665)
 
 Note: your experience may vary based on computer specs.
 
