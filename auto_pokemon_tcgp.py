@@ -197,7 +197,7 @@ def main():
         start = start_game(sct, monitor)
         if start:
             have_booster_pack = check_after_start_game(sct, monitor)
-            if have_booster_pack is not None and len(have_booster_pack) > 0:
+            if have_booster_pack:
                 open_booster_pack(sct, monitor)
         elif enable_check_pack_screen and check_at_home(sct, monitor):
             check_booster_pack_screen(sct, monitor)
@@ -302,7 +302,7 @@ def start_game(sct, monitor):
             sleep(10)
             return True
         home = check_at_home(sct, monitor)
-        if home is not None and len(home) > 0:
+        if home:
             return False
         sleep(0.5)
         count += 1
@@ -313,40 +313,36 @@ def start_game(sct, monitor):
 
 
 def check_at_home(sct, monitor):
-    return check_template(sct, monitor, 'at_home')
+    return is_template_matched(sct, monitor, 'at_home', method="check")
 
 
 def check_gifts(sct, monitor):
-    have_gifts = check_template(sct, monitor, 'gifts', threshold=0.95)
-    if have_gifts is not None and len(have_gifts) > 0:
-        move_to_click(have_gifts)
+    if is_template_matched(sct, monitor, 'gifts', method="check", threshold=0.95):
+        sleep(1)
+        click_template(sct, monitor, 'gifts')
         sleep(1)
         return True
-    else:
-        return False
+    return False
 
 
 def check_shop(sct, monitor):
-    have_shop = check_template(sct, monitor, 'shop')
-    if have_shop is not None and len(have_shop) > 0:
-        move_to_click(have_shop)
+    if is_template_matched(sct, monitor, 'shop', method="check"):
+        click_template(sct, monitor, 'shop')
         sleep(1)
         return True
-    else:
-        False
+    return False
 
 
 def check_missions(sct, monitor):
-    templates = ['missions_0', 'missions_1']
-
-    for template in templates:
-        have_missions = check_template(sct, monitor, template)
-        if have_missions is not None and len(have_missions) > 0:
-            if template == 'missions_0':
-                return None
-            move_to_click(have_missions)
-            sleep(1)
-            return True
+    # Check for missions_0 first (special case)
+    if is_template_matched(sct, monitor, 'missions_0', method="check"):
+        return None
+    
+    # Check for missions_1
+    if is_template_matched(sct, monitor, 'missions_1', method="check"):
+        click_template(sct, monitor, 'missions_1')
+        sleep(1)
+        return True
 
 
 def check_after_start_game(sct, monitor):
@@ -355,22 +351,20 @@ def check_after_start_game(sct, monitor):
 
     while count < max_attempts:
         home = check_at_home(sct, monitor)
-        if home is not None and len(home) > 0:
+        if home:
             sleep(1)
             return None
 
-        pokemon_tcgp_update_data = check_template(sct, monitor, 'pokemon_tcgp_update_data')
-        if pokemon_tcgp_update_data is not None and len(pokemon_tcgp_update_data) > 0:
+        if is_template_matched(sct, monitor, 'pokemon_tcgp_update_data', method="check"):
             print('Have Pokemon TCGP update')
             click_ok(sct, monitor)
             sleep(60)
             restart_script()
             return None
 
-        booster_pack = check_template(sct, monitor, 'pack_can_open')
-        if booster_pack is not None and len(booster_pack) > 0:
+        if is_template_matched(sct, monitor, 'pack_can_open', method="check"):
             print('Have booster pack')
-            return booster_pack
+            return True
 
         sleep(0.5)
         count += 1
@@ -380,11 +374,9 @@ def check_after_start_game(sct, monitor):
 
 def check_level_up(sct, monitor):
     sleep(6)
-    level_up = check_template(sct, monitor, 'level_up')
-    if level_up is not None and len(level_up) > 0:
+    if is_template_matched(sct, monitor, 'level_up', method="check"):
         click_tap_to_proceed(sct, monitor)
-        level_up_unlocked = check_template(sct, monitor, 'level_up_unlocked')
-        if level_up_unlocked is not None and len(level_up_unlocked) > 0:
+        if is_template_matched(sct, monitor, 'level_up_unlocked', method="check"):
             click_ok(sct, monitor)
         print('Leveled up')
 
@@ -392,24 +384,21 @@ def check_level_up(sct, monitor):
 def check_booster_pack_screen(sct, monitor):
     print('\nOpening Booster Pack Screen')
 
-    pack = finding_template(sct, monitor, 'pack', 10)
-    if pack is not None and len(pack) > 0:
-        move_to_click(pack)
-    else:
+    if not is_template_matched(sct, monitor, 'pack', method="find", max_attempts=10):
         print('Pack not found at home screen')
         return
 
-    pack_screen = finding_template(sct, monitor, 'pack_select_other_pack')
-    if pack_screen is not None and len(pack_screen) > 0:
-        print('At booster pack screen')
-        sleep(1.5)
-    else:
+    move_to_click(finding_template(sct, monitor, 'pack', 10))
+
+    if not is_template_matched(sct, monitor, 'pack_select_other_pack', method="find"):
         print('Not at booster pack screen')
         click_home(sct, monitor)
         return
 
-    can_open_pack = check_template(sct, monitor, 'pack_can_open')
-    if can_open_pack is not None and len(can_open_pack) > 0:
+    print('At booster pack screen')
+    sleep(1.5)
+
+    if is_template_matched(sct, monitor, 'pack_can_open', method="check"):
         print('Can open booster pack')
         sleep(1)
         open_booster_pack(sct, monitor)
@@ -442,15 +431,12 @@ def open_booster_pack(sct, monitor):
     sleep(1)
     click_template(sct, monitor, 'pack_select_other_pack')
 
-    select_expansion_screen = finding_template(sct, monitor, 'pack_select_expansion')
-
-    if select_expansion_screen is None or len(select_expansion_screen) == 0:
+    if not is_template_matched(sct, monitor, 'pack_select_expansion', method="find"):
         print("Select expansion screen not found. Skipping pack selection.")
         click_home(sct, monitor)
         return
 
     desired_pack_template = select_card_pack(desired_pack)
-
     if not desired_pack_template:
         print(f"Desired pack '{desired_pack}' not found in template mapping.")
         click_home(sct, monitor)
@@ -460,10 +446,7 @@ def open_booster_pack(sct, monitor):
     max_scroll_attempts = 5
     while scroll_attempts < max_scroll_attempts:
         # Check for the desired pack on screen
-        desired_pack_loc = check_template(
-            sct, monitor, desired_pack_template, threshold=0.8
-        )
-
+        desired_pack_loc = check_template(sct, monitor, desired_pack_template, threshold=0.8)
         if desired_pack_loc is not None and len(desired_pack_loc) > 0:
             # Found desired pack
             move_to_click(desired_pack_loc)
@@ -481,6 +464,7 @@ def open_booster_pack(sct, monitor):
     sleep(3)
     package = select_package(desired_pack)
     if package is not None:
+        sleep(5)
         click_template(sct, monitor, package) # card package
     else:
         print('Error in select_package')
@@ -498,31 +482,34 @@ def open_booster_pack(sct, monitor):
 
 
 def open_pack(sct, monitor):
-    open_slice = finding_template(sct, monitor, 'pack_open_slice')
-    while open_slice is not None and len(open_slice) > 0:
-        open_pack_slice(sct, monitor)
-        click_tap_hold(sct, monitor)
-        sleep(3)
-        click_next(sct, monitor)
-        sleep(6)
-        open_slice = check_template(sct, monitor, 'pack_open_slice')
+    # while loop for multiple card packs
+    # multiple card packs is super rare occurence (happened once as gift)
+    if is_template_matched(sct, monitor, 'pack_open_slice', method="find", max_attempts=30):
+        while True:
+            open_pack_slice(sct, monitor)
+            click_tap_hold(sct, monitor)
+            sleep(3)
+            click_next(sct, monitor)
+            sleep(6)
+            if not is_template_matched(sct, monitor, 'pack_open_slice', method="check"):
+                break
+    else:
+        print("ERROR: there is no pack to open")
+        return
 
-    congrat_screen = check_template(sct, monitor, 'task_tap_proceed') # collection milestones
-    if congrat_screen is not None and len(congrat_screen) > 0:
+    if is_template_matched(sct, monitor, 'milestone_card', method="check"):  # collection milestones
         click_tap_to_proceed(sct, monitor)
         sleep(3)
 
-    new_cards = check_template(sct, monitor, 'new_card_dex') # if new cards, register to dex
-    if new_cards is not None and len(new_cards) > 0:
+    if is_template_matched(sct, monitor, 'new_card_dex', method="check"):  # if new cards, register to dex
         for _ in range(2):
             click_skip(sct, monitor)
             sleep(1)
         click_next(sct, monitor)
         sleep(1)
 
-    shinedust = check_template(sct, monitor, 'task_click_ok')
-    if shinedust is not None and len(shinedust) > 0:
-        click_ok(sct, monitor) # click_ok to claim shinedust
+    if is_template_matched(sct, monitor, 'task_click_ok', method="check"):
+        click_ok(sct, monitor)  # click_ok to claim shinedust
         sleep(1)
 
 
@@ -545,8 +532,7 @@ def open_pack_slice(sct, monitor): # trace line to open
 def gifts(sct, monitor):
     print('\nOpening Gifts')
 
-    gifts_screen =  finding_template(sct, monitor, 'gifts_screen', 10)
-    if gifts_screen is not None and len(gifts_screen) > 0:
+    if is_template_matched(sct, monitor, 'gifts_screen', method="find"):
         sleep(0.5)
 
         claim_all = check_template(sct, monitor, 'gifts_claim_all', threshold=0.98)
@@ -554,9 +540,8 @@ def gifts(sct, monitor):
             move_to_click(claim_all)
             sleep(2)
 
-            # fallback when claim_all isn't detected properly
-            claim_all_ok = check_template(sct, monitor, 'task_click_ok')
-            if claim_all_ok is not None and len(claim_all_ok) > 0:
+            # Fallback when claim_all isn't detected properly
+            if is_template_matched(sct, monitor, 'task_click_ok', method="check"):
                 click_ok(sct, monitor)
                 sleep(1)
 
@@ -567,14 +552,12 @@ def gifts(sct, monitor):
                 sleep(1)
                 click_ok(sct, monitor)
                 open_pack(sct, monitor)
-                gifts_screen =  check_template(sct, monitor, 'gifts_screen', 10)
-                if gifts_screen is not None and len(gifts_screen) > 0:
-                    pass # check if at gifts_screen before new actions
-            elif claim_gift is None or len(claim_gift) == 0:
+                if is_template_matched(sct, monitor, 'gifts_screen', method="check", max_attempts=10):
+                    pass  # Check if at gifts_screen before next action
+            else:
                 break
 
-        no_claim = check_template(sct, monitor, 'gifts_no_claim')
-        if no_claim is not None and len(no_claim) > 0:
+        if is_template_matched(sct, monitor, 'gifts_no_claim', method="check"):
             click_x(sct, monitor)
     print('Finish opening gifts')
 
@@ -614,11 +597,8 @@ def wonder_pick(sct, monitor):
         print('Wonder Pick not found at home screen')
         return
 
-    wonder_pick_screen = finding_template(sct, monitor, 'wonder_pick_screen')
-    if wonder_pick_screen is not None and len(wonder_pick_screen) > 0:
-
+    if is_template_matched(sct, monitor, 'wonder_pick_screen', method="find"):
         event_picks = ['wonder_pick_chansey', 'wonder_pick_rare', 'wonder_pick_bonus']
-
         for pick in event_picks:
             sleep(1)
             event_pick = check_template(sct, monitor, pick)
@@ -634,8 +614,7 @@ def wonder_pick(sct, monitor):
                 sleep(0.5)
 
                 if pick in ['wonder_pick_chansey', 'wonder_pick_rare']:
-                    no_stamina = check_template(sct, monitor, 'wonder_pick_no_stamina')
-                    if no_stamina is not None and len(no_stamina) > 0:
+                    if is_template_matched(sct, monitor, 'wonder_pick_no_stamina', method="check"):
                         print('No stamina for special wonder pick')
                         click_x(sct, monitor)
                         event_loc = get_click_location(event_pick)
@@ -645,13 +624,11 @@ def wonder_pick(sct, monitor):
 
                 click_ok(sct, monitor)
                 click_skip(sct, monitor)
-                wonder_pick_a_card_screen = finding_template(sct, monitor, 'wonder_pick_a_card_screen')
-                if wonder_pick_a_card_screen is not None and len(wonder_pick_a_card_screen) > 0:
+                if is_template_matched(sct, monitor, 'wonder_pick_a_card_screen', method="find"):
                     pick_random_card(sct, monitor)
                     sleep(1.5)
 
-                    item = check_template(sct, monitor, 'wonder_pick_bonus_item')
-                    if "wonder_pick_bonus" in pick and item is not None and len(item) > 0:
+                    if pick == "wonder_pick_bonus" and is_template_matched(sct, monitor, 'wonder_pick_bonus_item', method="check"):
                         print("Wonder pick an item")
                         for _ in range(2):
                             click_tap_to_proceed(sct, monitor)
@@ -661,15 +638,11 @@ def wonder_pick(sct, monitor):
                         click_tap_to_proceed(sct, monitor)
                         sleep(3)
 
-                        """
-                        congrat_screen = check_template(sct, monitor, 'task_tap_proceed') # collection milestones
-                        if congrat_screen is not None and len(congrat_screen) > 0:
-                            click_tap_to_proceed(sct, monitor)
-                            sleep(3)
-                        """
+                    if is_template_matched(sct, monitor, 'milestone_card', method="check"):  # collection milestones
+                        click_tap_to_proceed(sct, monitor)
+                        sleep(3)
 
-                        new_cards = check_template(sct, monitor, 'new_card_dex')
-                        if new_cards is not None and len(new_cards) > 0:
+                        if is_template_matched(sct, monitor, 'new_card_dex', method="check"):
                             for _ in range(2):
                                 click_skip(sct, monitor)
                                 sleep(1)
@@ -678,10 +651,9 @@ def wonder_pick(sct, monitor):
                         sleep(2)
                         click_tap_to_proceed(sct, monitor)
                         sleep(1)
-                wonder_pick_screen = finding_template(sct, monitor, 'wonder_pick_screen')
-                if wonder_pick_screen is not None and len(wonder_pick_screen) > 0:
+                if is_template_matched(sct, monitor, 'wonder_pick_screen', method="find"):
                     sleep(1)
-                    pass # make sure it's at screen before click_home
+                    pass  # make sure it's at screen before click_home
             else:
                 print(f"Template '{pick}' not found")
 
@@ -718,8 +690,7 @@ def missions(sct, monitor):
     else:
         print('Complete all missions button not found')
 
-    non_daily_complete = check_template(sct, monitor, 'missions_non_daily_complete')
-    if non_daily_complete is not None and len(non_daily_complete) > 0:
+    if is_template_matched(sct, monitor, 'missions_non_daily_complete', method="check"):
         click_ok(sct, monitor)
         sleep(3)
 
@@ -765,6 +736,7 @@ def battle_solo(sct, monitor):
     battle = finding_template(sct, monitor, 'battle')
     if battle is not None and len(battle) > 0:
         move_to_click(battle)
+        sleep(3)
     else:
         print('Battle button not found')
         sleep(3)
@@ -772,18 +744,17 @@ def battle_solo(sct, monitor):
 
     battle_screen_count = 0
     while battle_screen_count < 10:
-        solo_event = check_template(sct, monitor, 'battle_solo_0')
-        if solo_event is not None and len(solo_event) > 0:
+        if is_template_matched(sct, monitor, 'battle_solo_0', method="check"):
             print('Solo event not found')
             sleep(1)
             return False
+
         solo_event = check_template(sct, monitor, 'battle_solo_1')
         if solo_event is not None and len(solo_event) > 0:
             move_to_click(solo_event)
             break
         sleep(1)
         battle_screen_count += 1
-
 
     drop_event = finding_template(sct, monitor, 'battle_drop_event', 10)
     if drop_event is not None and len(drop_event) > 0:
@@ -796,10 +767,7 @@ def battle_solo(sct, monitor):
     battle_count = 0
     while True:
         sleep(3)
-        event_stamina = check_template(sct, monitor, 'battle_solo_stamina')
-        if event_stamina is not None and len(event_stamina) > 0:
-            pass
-        else:
+        if not is_template_matched(sct, monitor, 'battle_solo_stamina', method="check"):
             print('Solo stamina not found')
             sleep(3)
             return False
@@ -833,8 +801,7 @@ def battle_solo(sct, monitor):
             sleep(3)
             return False
 
-        battle_rules_screen = finding_template(sct, monitor, 'battle_rules_screen')
-        if battle_rules_screen is not None and len(battle_rules_screen) > 0:
+        if is_template_matched(sct, monitor, 'battle_rules_screen', method="find"):
             auto_battle = finding_template(sct, monitor, 'battle_rules_auto')
             if auto_battle:
                 move_to_click(auto_battle)
@@ -860,8 +827,7 @@ def battle_solo(sct, monitor):
             sleep(0.5)
 
         while True:
-            defeat = check_template(sct, monitor, 'battle_end_defeat')
-            if defeat is not None and len(defeat) > 0:
+            if is_template_matched(sct, monitor, 'battle_end_defeat', method="check"):
                 print('Battle end in defeat')
                 for _ in range(2):
                     click_tap_to_proceed(sct, monitor)
@@ -876,8 +842,8 @@ def battle_solo(sct, monitor):
                     move_to_click(back)
                     sleep(1)
                 break
-            victory = check_template(sct, monitor, 'battle_end_victory')
-            if victory is not None and len(victory) > 0:
+
+            if is_template_matched(sct, monitor, 'battle_end_victory', method="check"):
                 print('Battle end in victory')
                 click_template(sct, monitor, 'battle_end_victory_proceed')
                 for _ in range(2):
@@ -888,15 +854,14 @@ def battle_solo(sct, monitor):
                     move_to_click(battle_rewards)
                     sleep(1)
                 click_next(sct, monitor)
-                new_battle_unlocked = check_template(sct, monitor, 'battle_end_victory_new_battle_unlocked')
-                if new_battle_unlocked is not None and len(new_battle_unlocked) > 0:
+                if is_template_matched(sct, monitor, 'battle_end_victory_new_battle_unlocked', method="check"):
                     click_next(sct, monitor)
                 if enable_battle_victory_repeat:
-                    break # repeat with victory
+                    break  # repeat with victory
                 else:
                     print('Battle finish')
                     sleep(3)
-                    return True # ends with victory
+                    return True  # ends with victory
             sleep(8)
             win32gui.SetForegroundWindow(HWND)
             sleep(2)
@@ -916,6 +881,7 @@ def exit_bluestacks(sct, monitor):
     if x is None or len(x) == 0:
         print('Failed to find BlueStacks X button')
         return
+
     print('\nExiting BlueStacks')
     move_to_click(x)
     sleep(1)
@@ -932,17 +898,14 @@ def close_bluestacks_ad(sct, monitor):
     pass
 
 
-# click_home that adjust for ingame lag when loading home
-def click_home(sct, monitor):
+def click_home(sct, monitor):  # click_home that adjust for ingame lag when loading home
     templates = ['home', 'at_home']
-
     for template in templates:
         home = check_template(sct, monitor, template)
         if home is not None and len(home) > 0:
             move_to_click(home)
             sleep(1)
-            at_home = finding_template(sct, monitor, 'at_home')
-            if at_home is not None and len(at_home) > 0:
+            if is_template_matched(sct, monitor, 'at_home', method="find"):
                 sleep(3)
                 return home
 
@@ -985,15 +948,14 @@ def click_back(sct, monitor):
 def click_tap_hold(sct, monitor):
     tap_hold = finding_template(sct, monitor, 'task_tap_hold')
     if tap_hold is not None and len(tap_hold) > 0:
+        loc = get_click_location(tap_hold)
         while True:
-            loc = get_click_location(tap_hold)
             pyautogui.moveTo(loc)
             pyautogui.mouseDown()
             sleep(3)
             pyautogui.mouseUp()
             sleep(0.25)
-            tap_hold = check_template(sct, monitor, 'task_tap_hold')
-            if tap_hold is None or len(tap_hold) == 0:
+            if not is_template_matched(sct, monitor, 'task_tap_hold', method="check"):
                 return
 
 
