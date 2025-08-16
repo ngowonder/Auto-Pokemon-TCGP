@@ -84,6 +84,7 @@ TEMPLATES = {
     'pack_select_package_8': 'images/pack_select_package_8.jpg',
     'pack_open': 'images/pack_open.jpg',
     'pack_open_slice': 'images/pack_open_slice.jpg',
+    'milestone_card': 'images/milestone_card.jpg',
     'new_card_dex': 'images/new_card_dex.jpg',
     'gifts': 'images/gifts.jpg',
     'gifts_screen': 'images/gifts_screen.jpg',
@@ -638,9 +639,9 @@ def wonder_pick(sct, monitor):
                         click_tap_to_proceed(sct, monitor)
                         sleep(3)
 
-                    if is_template_matched(sct, monitor, 'milestone_card', method="check"):  # collection milestones
-                        click_tap_to_proceed(sct, monitor)
-                        sleep(3)
+                        if is_template_matched(sct, monitor, 'milestone_card', method="check"):  # collection milestones
+                            click_tap_to_proceed(sct, monitor)
+                            sleep(3)
 
                         if is_template_matched(sct, monitor, 'new_card_dex', method="check"):
                             for _ in range(2):
