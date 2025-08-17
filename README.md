@@ -1,6 +1,8 @@
 # Auto Pokemon TCG Pocket
 
-Auto Pokemon TCG Pocket is designed to automate daily tasks in the Pokemon TCG Pocket using Bluestacks
+<a href="https://www.buymeacoffee.com/ngowonder" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>  <a href='https://ko-fi.com/F1F21AN8FX' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+
+Auto Pokemon TCG Pocket is designed to automate daily tasks in the Pokemon TCG Pocket using Bluestacks and Computer Vision
 
 
 ## What does it do
@@ -11,24 +13,20 @@ Auto Pokemon TCG Pocket is designed to automate daily tasks in the Pokemon TCG P
 - Missions: Claim and clear your missions
 - Battle Solo events
 
+## To get started
 
-## If you like the project,
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F1F21AN8FX)
-
-
-## Requirements
+### Requirements
 
 - [BlueStacks](https://www.bluestacks.com) (free Android emulator)
 
 - Python version 3.09+
 
-## Crucial Settings
+### Crucial Settings
 
 The templates is sized to resolution 1600x900. The resolution and screen size has to match that.
 The templates are in English.
 
-### Bluestacks Display settings
+#### Bluestacks Display settings
 
 - display resolution: 1600x900
 
@@ -36,31 +34,24 @@ The templates are in English.
 
 - interface scaling: 100% Default
 
-### Enable "Fix Window Size"
+#### Enable "Fix Window Size"
 
 - Menu Button (next to the Minimize button, top of player), so the BlueStack Player doesn't accidentally change size
 
 If your emulator change sizes, change it using this [solution](https://github.com/ngowonder/Auto-Pokemon-TCGP/issues/8#issuecomment-3180825665)
 
-Note: your experience may vary based on computer specs.
 
 
-## Instructions to run script
+### Instructions to run script
 
 Install python requirements:
-- `pip install -r requirements.txt`
-
-or
-- `py -m pip install -r requirements.txt`
+- `pip install -r requirements.txt` or `py -m pip install -r requirements.txt`
 
 Run script on either Start Game screen or the Home screen
-- `py auto_pokemon_tcgp.py`
+- `py auto_pokemon_tcgp.py` or `py -m auto_pokemon_tcgp`
 
-or
-- `py -m auto_pokemon_tcgp`
+For the `desired_packs`, open config.yaml with a text editor or notepad, use any readable style you like, and add/remove `#` in front of strings.
 
-For the `desired_packs`, in the config.yaml use any readable style you like, and add/remove any strings.
+- If you desire 1 specific pack, make sure there is no `#` in front of it and comment out all the rest with `#` in front of it.
 
-If you desire 1 specific pack, remove all but that one string.
-
-When new card packs get release, refer to `auto_pokemon_tcgp.py` for the complete list of `desired_packs`.
+- When new card packs get release, refer to top of `auto_pokemon_tcgp.py` for the complete list of `desired_packs`.
