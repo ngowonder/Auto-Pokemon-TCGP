@@ -12,7 +12,7 @@ Enable "Fix Window Size"
     Menu Button (next to the Minimize button, top of player), so the BlueStack Player doesn't accidentally change size
 
 # desired_pack choices for config.yaml:
-"charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee", "ho-oh", "lugia"
+"charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee", "ho-oh", "lugia", "suicune"
 """
 
 from opencv_utils import match_template, get_click_location
@@ -57,10 +57,11 @@ TEMPLATES = {
     'start_game': 'images/start_game.jpg',
     'at_home': 'images/home_1.jpg',
     'home': 'images/home_0.jpg',
-    'pack': 'images/pack.jpg',
+    'home_pack': 'images/home_pack.png',
     'pack_can_open': 'images/pack_can_open.jpg',
     'pack_select_other_pack': 'images/pack_select_other_booster_packs.jpg',
     'pack_select_expansion': 'images/pack_select_expansion.jpg',
+    'pack_select_expansion_screen': 'images/pack_select_expansion_screen.png',
     'pack_select_pack_charizard': 'images/pack_select_pack_charizard.jpg',
     'pack_select_pack_mewtwo': 'images/pack_select_pack_mewtwo.jpg',
     'pack_select_pack_pikachu': 'images/pack_select_pack_pikachu.jpg',
@@ -75,6 +76,7 @@ TEMPLATES = {
     'pack_select_pack_eevee': 'images/pack_select_pack_eevee.jpg',
     'pack_select_pack_ho-oh': 'images/pack_select_pack_ho-oh.jpg',
     'pack_select_pack_lugia': 'images/pack_select_pack_lugia.jpg',
+    'pack_select_pack_suicune': 'images/pack_select_pack_suicune.png',
     'pack_select_package_0': 'images/pack_select_package_0.jpg',
     'pack_select_package_2': 'images/pack_select_package_2.jpg',
     'pack_select_package_3': 'images/pack_select_package_3.jpg',
@@ -82,6 +84,7 @@ TEMPLATES = {
     'pack_select_package_6': 'images/pack_select_package_6.jpg',
     'pack_select_package_7': 'images/pack_select_package_7.jpg',
     'pack_select_package_8': 'images/pack_select_package_8.jpg',
+    'pack_select_package_9': 'images/pack_select_package_9.png',
     'pack_open': 'images/pack_open.jpg',
     'pack_open_slice': 'images/pack_open_slice.jpg',
     'milestone_card': 'images/milestone_card.jpg',
@@ -162,6 +165,7 @@ card_pack_to_template_key = {
     'eevee': 'pack_select_pack_eevee',
     'ho-oh': 'pack_select_pack_ho-oh',
     'lugia': 'pack_select_pack_lugia',
+    'suicune': 'pack_select_pack_suicune',
 }
 
 package_to_template_key = {
@@ -179,6 +183,7 @@ package_to_template_key = {
     'eevee': 'pack_select_package_7',
     'ho-oh': 'pack_select_package_8',
     'lugia': 'pack_select_package_8',
+    'suicune': 'pack_select_package_9',
 }
 
 battle_diff_to_template_key = {
@@ -385,11 +390,11 @@ def check_level_up(sct, monitor):
 def check_booster_pack_screen(sct, monitor):
     print('\nOpening Booster Pack Screen')
 
-    if not is_template_matched(sct, monitor, 'pack', method="find", max_attempts=10):
+    if not is_template_matched(sct, monitor, 'home_pack', method="find", max_attempts=10):
         print('Pack not found at home screen')
         return
 
-    move_to_click(finding_template(sct, monitor, 'pack', 10))
+    move_to_click(finding_template(sct, monitor, 'home_pack', 10))
 
     if not is_template_matched(sct, monitor, 'pack_select_other_pack', method="find"):
         print('Not at booster pack screen')
@@ -454,6 +459,9 @@ def open_booster_pack(sct, monitor):
             break
         else:
             # Scroll down to reveal more packs
+            loc = finding_template(sct, monitor, "pack_select_expansion_screen")
+            pyautogui.moveTo(loc)
+            sleep(0.25)
             pyautogui.scroll(-1)
             sleep(1)
             scroll_attempts += 1
@@ -559,6 +567,7 @@ def gifts(sct, monitor):
                 break
 
         if is_template_matched(sct, monitor, 'gifts_no_claim', method="check"):
+            sleep(1)
             click_x(sct, monitor)
     print('Finish opening gifts')
 
@@ -705,6 +714,7 @@ def missions(sct, monitor):
     themed_collection = check_template(sct, monitor, 'missions_themed_collections')
     if themed_collection is not None and len(themed_collection) > 0:
         move_to_click(themed_collection)
+        sleep(0.5)
         complete = finding_template(sct, monitor, 'missions_complete')
         sleep(1)
         while complete:
