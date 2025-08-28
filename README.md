@@ -58,7 +58,7 @@ For the `desired_packs`, open config.yaml with a text editor or notepad, use any
 - When new card packs get release, refer to top of `auto_pokemon_tcgp.py` for the complete list of `desired_packs`.
 
 
-### Future Plans
+## Future Plans
 
 - open booster pack: future proofing for pack series (A, B, C+)
 - event battle difficulty fallback
