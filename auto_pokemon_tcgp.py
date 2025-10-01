@@ -12,11 +12,10 @@ Enable "Fix Window Size"
     Menu Button (next to the Minimize button, top of player), so the BlueStack Player doesn't accidentally change size
 
 # desired_pack choices for config.yaml:
-"charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee", "ho-oh", "lugia", "suicune"
+"charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee", "ho-oh", "lugia", "suicune", "deluxe pack ex"
 """
 
-from opencv_utils import match_template, get_click_location
-from mss import mss
+
 import cv2
 import os
 import psutil
@@ -24,10 +23,14 @@ import pyautogui
 import random
 import subprocess
 import sys
-from time import sleep
 import win32gui
 import numpy as np
 import yaml
+
+from mss import mss
+from opencv_utils import match_template, get_click_location
+from time import sleep
+from typing import Literal
 
 
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.yaml")
@@ -60,8 +63,7 @@ TEMPLATES = {
     'home_pack': 'images/home_pack.png',
     'pack_can_open': 'images/pack_can_open.jpg',
     'pack_select_other_pack': 'images/pack_select_other_booster_packs.jpg',
-    'pack_select_expansion': 'images/pack_select_expansion.jpg',
-    'pack_select_expansion_screen': 'images/pack_select_expansion_screen.png',
+    'pack_select_expansion_window': 'images/pack_select_expansion_window.png',
     'pack_select_pack_charizard': 'images/pack_select_pack_charizard.jpg',
     'pack_select_pack_mewtwo': 'images/pack_select_pack_mewtwo.jpg',
     'pack_select_pack_pikachu': 'images/pack_select_pack_pikachu.jpg',
@@ -77,6 +79,7 @@ TEMPLATES = {
     'pack_select_pack_ho-oh': 'images/pack_select_pack_ho-oh.jpg',
     'pack_select_pack_lugia': 'images/pack_select_pack_lugia.jpg',
     'pack_select_pack_suicune': 'images/pack_select_pack_suicune.png',
+    'pack_select_pack_deluxe_pack_ex': 'images/pack_select_pack_deluxe_pack_ex.png',
     'pack_select_package_0': 'images/pack_select_package_0.jpg',
     'pack_select_package_2': 'images/pack_select_package_2.jpg',
     'pack_select_package_3': 'images/pack_select_package_3.jpg',
@@ -85,6 +88,7 @@ TEMPLATES = {
     'pack_select_package_7': 'images/pack_select_package_7.jpg',
     'pack_select_package_8': 'images/pack_select_package_8.jpg',
     'pack_select_package_9': 'images/pack_select_package_9.png',
+    'pack_select_package_deluxe_pack_ex': 'images/pack_select_package_deluxe_pack_ex.png',
     'pack_open': 'images/pack_open.jpg',
     'pack_open_slice': 'images/pack_open_slice.jpg',
     'milestone_card': 'images/milestone_card.jpg',
@@ -166,6 +170,7 @@ card_pack_to_template_key = {
     'ho-oh': 'pack_select_pack_ho-oh',
     'lugia': 'pack_select_pack_lugia',
     'suicune': 'pack_select_pack_suicune',
+    'deluxe pack ex': 'pack_select_pack_deluxe_pack_ex',
 }
 
 package_to_template_key = {
@@ -184,6 +189,7 @@ package_to_template_key = {
     'ho-oh': 'pack_select_package_8',
     'lugia': 'pack_select_package_8',
     'suicune': 'pack_select_package_9',
+    'deluxe pack ex': 'pack_select_package_deluxe_pack_ex',
 }
 
 battle_diff_to_template_key = {
@@ -437,10 +443,12 @@ def open_booster_pack(sct, monitor):
     sleep(1)
     click_template(sct, monitor, 'pack_select_other_pack')
 
-    if not is_template_matched(sct, monitor, 'pack_select_expansion', method="find"):
-        print("Select expansion screen not found. Skipping pack selection.")
+    select_expansion = finding_template(sct, monitor, "pack_select_expansion_window")
+    if select_expansion is not None and len(select_expansion) > 0:
+        print("Select expansion window not found. Skipping pack selection.")
         click_home(sct, monitor)
         return
+    select_expansion_loc = get_click_location(select_expansion)
 
     desired_pack_template = select_card_pack(desired_pack)
     if not desired_pack_template:
@@ -449,7 +457,7 @@ def open_booster_pack(sct, monitor):
         return
 
     scroll_attempts = 0
-    max_scroll_attempts = 5
+    max_scroll_attempts = 10
     while scroll_attempts < max_scroll_attempts:
         # Check for the desired pack on screen
         desired_pack_loc = check_template(sct, monitor, desired_pack_template, threshold=0.8)
@@ -459,8 +467,7 @@ def open_booster_pack(sct, monitor):
             break
         else:
             # Scroll down to reveal more packs
-            loc = finding_template(sct, monitor, "pack_select_expansion_screen")
-            pyautogui.moveTo(loc)
+            pyautogui.moveTo(select_expansion_loc)
             sleep(0.25)
             pyautogui.scroll(-1)
             sleep(1)
@@ -492,12 +499,12 @@ def open_booster_pack(sct, monitor):
 
 def open_pack(sct, monitor):
     # while loop for multiple card packs
-    # multiple card packs is super rare occurence (happened once as gift)
+    # multiple card packs is super rare occurrence (happened once as gift)
     if is_template_matched(sct, monitor, 'pack_open_slice', method="find", max_attempts=30):
         while True:
             open_pack_slice(sct, monitor)
             click_tap_hold(sct, monitor)
-            sleep(3)
+            sleep(4)
             click_next(sct, monitor)
             sleep(6)
             if not is_template_matched(sct, monitor, 'pack_open_slice', method="check"):
@@ -1037,7 +1044,7 @@ def finding_template(sct, monitor, template_key, max_attempts=60, threshold=0.85
     return None
 
 
-def is_template_matched(sct, monitor, template, method="check", max_attempts=60, threshold=0.85) -> bool:
+def is_template_matched(sct, monitor, template, method: Literal["check", "find"]="check", max_attempts=60, threshold=0.85) -> bool:
     if template is None or not isinstance(template, str):
         raise ValueError("Error: template cannot be None and must be a string to TEMPLATE dict.")
 
