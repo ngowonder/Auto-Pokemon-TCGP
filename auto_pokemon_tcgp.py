@@ -444,7 +444,7 @@ def open_booster_pack(sct, monitor):
     click_template(sct, monitor, 'pack_select_other_pack')
 
     select_expansion = finding_template(sct, monitor, "pack_select_expansion_window")
-    if select_expansion is not None and len(select_expansion) > 0:
+    if select_expansion is None and len(select_expansion) == 0:
         print("Select expansion window not found. Skipping pack selection.")
         click_home(sct, monitor)
         return
