@@ -694,7 +694,7 @@ class Bot:
                 diff_key = DIFF_TO_TEMPLATE_KEY.get(diff)
                 desired_diff = check_template(sct, monitor, diff_key)
 
-                if len(desired_diff) >= 2:
+                if desired_diff is not None and len(desired_diff) >= 2:
                     print(f"{current_datetime().strftime('%H:%M:%S')}] There is {len(desired_diff)} {diff} on screen\n\
                         The function to do or select multiple {diff} is not available. Exiting Battle")
                     return False
@@ -721,7 +721,7 @@ class Bot:
                 diff_key = DIFF_TO_TEMPLATE_KEY.get(diff)
                 desired_diff = check_template(sct, monitor, diff_key)
 
-                if len(desired_diff) >= 2:
+                if desired_diff is not None and len(desired_diff) >= 2:
                     print(f"{current_datetime().strftime('%H:%M:%S')}] There is {len(desired_diff)} {diff} on screen\n\
                         The function to do or select multiple {diff} is not available. Exiting Battle")
                     return False
