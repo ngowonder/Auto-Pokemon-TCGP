@@ -51,16 +51,10 @@ Install python requirements:
 Run script on either Start Game screen or the Home screen
 - `py auto_pokemon_tcgp.py` or `py -m auto_pokemon_tcgp`
 
-For the `desired_packs`, open config.yaml with a text editor or notepad, use any readable style you like, and add/remove `#` in front of strings.
 
-- If you desire 1 specific pack, make sure there is no `#` in front of it and comment out all the rest with `#` in front of it.
+For the `desired_booster_packs`, open config.yaml with a text editor or notepad, use any readable style you like, and add/remove `#` in front of strings.
 
-- When new card packs get release, refer to top of `auto_pokemon_tcgp.py` for the complete list of `desired_packs`.
+- If you desire 1 or a few specific pack(s), make sure there is no `#` in front of it and comment out all the rest with `#` in front of it.
+- If a few booster packs is in the list, it will randomly select one.
 
-
-## Future Plans
-
-- open booster pack: future proofing for pack series (A, B, C+)
-- event battle difficulty fallback
-- better missions handling rework
-- pokemon tcgp update handling rework
+- When new card packs get release, refer to top of `auto_pokemon_tcgp.py` or updated `config.yaml` for the complete list of `desired_booster_packs`.

@@ -57,7 +57,7 @@ battle_check_time = config["battle_check_time"]
 enable_battle_defeat_redo = config["enable_battle_defeat_redo"]
 enable_battle_victory_repeat = config["enable_battle_victory_repeat"]
 
-DEBUG: bool = True
+DEBUG: bool = config["debug"]
 EXE_PATH = r'"C:\Program Files\BlueStacks_nxt\HD-Player.exe" --instance Pie64 --cmd launchApp --package "jp.pokemon.pokemontcgp" --source desktop_shortcut'
 HWND = None # Global HWND variable
 PROCESS_NAME = ['BlueStacks', 'BlueStacks App Player', 'HD-Player',]

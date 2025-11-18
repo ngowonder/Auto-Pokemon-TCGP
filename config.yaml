@@ -30,6 +30,7 @@ desired_booster_packs:
     - mega gyarados
 
 # Control flags for various features
+debug: false
 enable_check_pack_screen: true
 enable_wonder_pick: true
 enable_special_wonder_picks: true  # special Wonder Picks that uses stamina (e.g., Chansey, Rare)
