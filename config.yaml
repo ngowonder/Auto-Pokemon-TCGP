@@ -3,49 +3,43 @@
 # YAML supports Block-style or Flow-style lists
 
 
-# Configuration for the desired pack selection
-# Flow-style lists
-desired_packs: [
-    "charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo"
-]
+# Configuration for the desired_booster_packs selection
+##  Flow-style lists (uncomment this list and comment the other to use)
+# desired_booster_packs: ["charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee", "ho-oh", "lugia", "suicune", "deluxe pack ex", "mega altaria", "mega blaziken", "mega gyarados"]
 
-# Block-style (uncomment to use)
-# desired_packs:
-#   - "charizard"
-#   - "mewtwo"
-#   - "pikachu"
-#   - "mew"
-#   - "dialga"
-#   - "palkia"
-#   - "arceus"
-#   - "shiny"
-#   - "lunala"
-#   - "solgaleo"
-
-# Block-style (uncomment to use)
-# desired_packs: [
-#   "charizard",
-#   "mewtwo",
-#   "pikachu",
-#   "mew",
-#   "dialga",
-#   "palkia",
-#   "arceus",
-#   "shiny",
-#   "lunala",
-#   "solgaleo"
-# ]
+## Block-style list (items must be indented and each item must begin with a hyphen)
+desired_booster_packs:
+    # - "charizard"
+    # - "mewtwo"
+    # - "pikachu"
+    # - "mew"
+    # - "dialga"
+    # - "palkia"
+    # - "arceus"
+    # - "shiny"
+    # - "lunala"
+    # - "solgaleo"
+    # - "buzzwole"
+    # - "eevee"
+    # - "ho-oh"
+    # - "lugia"
+    # - "suicune"
+    # - "deluxe pack ex"  # NOTE # no longer available
+    - mega altaria
+    - mega blaziken
+    - mega gyarados
 
 # Control flags for various features
 enable_check_pack_screen: true
 enable_wonder_pick: true
-enable_wonder_pick_event: true # Enable or disable wonder pick special events (e.g., Chansey, Rare)
+enable_special_wonder_picks: true  # special Wonder Picks that uses stamina (e.g., Chansey, Rare)
 enable_check_level_up: true
 enable_exit_app: true
 
 # Battle settings
 enable_event_battle: true
 desired_battle_difficulty: expert  # Difficulty choices: beginner, intermediate, advanced, expert
+enable_battle_difficulty_fallback: true
 battle_check_time: 240  # Seconds to sleep before battle check (0 is False for no sleep)
-enable_battle_defeat_redo: true # Redo battle on defeat
-enable_battle_victory_repeat: true # Repeat battle after victory
+enable_battle_defeat_redo: true  # Redo battle on defeat
+enable_battle_victory_repeat: true  # Repeat battle after victory

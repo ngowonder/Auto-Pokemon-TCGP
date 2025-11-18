@@ -5,17 +5,35 @@ opencv-python utils
 import cv2
 import numpy as np
 
+from typing import Literal
 
-def draw_bounding_boxes(image, boxes, color=(0, 255, 0), thickness=2):
+
+def to_grayscale(image):
+    """
+    Convert an image to grayscale.
+
+    Args:
+        image: The image to convert.
+    """
+    # if len(image.shape) == 2:  # Already grayscale
+    if image.ndim == 2:
+        return image
+    return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+
+def draw_bounding_boxes(image, boxes=None, color=(0, 255, 0), thickness=2):
     """
     Draw bounding boxes on an image.
 
-    :param image: The image to draw on.
-    :param boxes: A list of bounding boxes (x, y, w, h).
-    :param color: The color of the bounding box (BGR).
-    :param thickness: The thickness of the bounding box lines.
-    :return: The image with bounding boxes drawn.
+    Args:
+        image: The image to draw on.
+        boxes: A list of bounding boxes (x, y, w, h) or None to draw all.
+        color: The color of the bounding box (BGR format).
+        thickness: The thickness of the bounding box lines.
     """
+    if boxes is None:
+        return image
+
     for (x, y, w, h) in boxes:
         cv2.rectangle(image, (x, y), (x + w, y + h), color, thickness)
     return image
@@ -23,13 +41,17 @@ def draw_bounding_boxes(image, boxes, color=(0, 255, 0), thickness=2):
 
 def match_template(image, template, method=cv2.TM_CCOEFF_NORMED, threshold=0.85, group_rectangles=False):
     """
-    Match a template image within a larger image using OpenCV's matchTemplate function.
+    Match a template within an image.
 
-    :param image: The larger image to search within.
-    :param template: The template image to search for.
-    :param method: The method to use for template matching.
-    :param threshold: The threshold to determine if a match is valid.
-    :return: The image with bounding boxes drawn around detected matches.
+    Args:
+        image: The larger image to search within.
+        template: The template image to search for.
+        method: Template matching method.
+        threshold: Match threshold to determine if a match is valid.
+        group_rectangles: Whether to group overlapping rectangles.
+
+    Return:
+        List of boxes (x, y, w, h).
     """
     # Ensure image and template is a NumPy array
     if not isinstance(image, np.ndarray):
@@ -38,59 +60,117 @@ def match_template(image, template, method=cv2.TM_CCOEFF_NORMED, threshold=0.85,
     if not isinstance(template, np.ndarray):
         template = np.array(template)
 
-    # Convert images to grayscale if they are not already
-    if len(image.shape) == 3:
-        image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    else:
-        image_gray = image
-
-    if len(template.shape) == 3:
-        template_gray = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
-    else:
-        template_gray = template
-
-    # Get the dimensions of the template
-    template_height, template_width = template_gray.shape
+    # Convert to grayscale
+    image_gray = to_grayscale(image)
+    template_gray = to_grayscale(template)
 
     # Perform template matching
     result = cv2.matchTemplate(image_gray, template_gray, method)
 
-    # Find the locations where the match value is above the threshold
+    # Find locations above threshold
     locations = np.where(result >= threshold)
 
-    # Extract the coordinates of the bounding boxes
-    boxes = []
-    for (x, y) in zip(*locations[::-1]):
-        boxes.append((x, y, template_width, template_height))
+    # Get template dimensions
+    h, w = template.shape[:2]
+
+    # Create boxes from locations
+    boxes = [(int(x), int(y), int(w), int(h)) for x, y in zip(locations[1], locations[0])]
 
     # Group rectangles if the option is enabled
-    if group_rectangles:
-        boxes, _ = cv2.groupRectangles([list(box) for box in boxes], groupThreshold=1, eps=0.5)
-        # Ensure boxes is always a list
-        if isinstance(boxes, tuple) and len(boxes) == 1:
-            boxes = [boxes[0]]
+    if group_rectangles and boxes:
+        grouped, _ = cv2.groupRectangles(boxes, groupThreshold=1, eps=0.5)
+        boxes = [tuple(int(val) for val in b) for b in grouped]
 
-    # Draw bounding boxes on the original image
-    image_with_boxes = draw_bounding_boxes(image.copy(), boxes, color=(0, 255, 0), thickness=2)
+    return boxes
 
-    return image_with_boxes, boxes
+
+def match_template_color(image, template, method=cv2.TM_CCOEFF_NORMED, color_space: Literal["bgr", "hsv"]="bgr", 
+                        threshold=0.85, group_rectangles=False):
+    """
+    Match a template within an image using color information (per-channel matching).
+
+    Args:
+        image: The larger image to search within.
+        template: The template image to search for.
+        method: Template matching method.
+        threshold: Match threshold to determine if a match is valid.
+        group_rectangles: Whether to group overlapping rectangles.
+
+    Return:
+        List of boxes (x, y, w, h).
+    """
+    if not isinstance(image, np.ndarray):
+        image = np.array(image)
+    if not isinstance(template, np.ndarray):
+        template = np.array(template)
+
+    # Ensure both are 3-channel, convert grayscale to BGR (OpenCV format)
+    if image.ndim == 2:
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+    if template.ndim == 2:
+        template = cv2.cvtColor(template, cv2.COLOR_GRAY2BGR)
+
+    # Convert to the specified color space
+    if color_space.lower() == "hsv":
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        template = cv2.cvtColor(template, cv2.COLOR_BGR2HSV)
+    else:  # Default to BGR
+        image = image
+        template = template
+
+    # Split channels
+    image_channels = cv2.split(image)
+    template_channels = cv2.split(template)
+
+    # Match each channel
+    results = []
+    for img_ch, tmpl_ch in zip(image_channels, template_channels):
+        res = cv2.matchTemplate(img_ch, tmpl_ch, method)
+        results.append(res)
+
+    # Stack results and take the minimum across all channels
+    stacked_results = np.stack(results, axis=-1)
+    combined_result = np.min(stacked_results, axis=-1)
+
+    # Find locations above threshold
+    locations = np.where(combined_result >= threshold)
+
+    # Get template dimensions
+    h, w = template.shape[:2]
+
+    # Create boxes (x, y, w, h)
+    boxes = [(int(x), int(y), int(w), int(h)) for x, y in zip(locations[1], locations[0])]
+
+    # Group overlapping rectangles if requested
+    if group_rectangles and boxes:
+        grouped, _ = cv2.groupRectangles(boxes, groupThreshold=1, eps=0.5)
+        boxes = [tuple(int(val) for val in b) for b in grouped]
+
+    return boxes
 
 
 def get_click_location(boxes):
     """
     Determine a single click location from the detected bounding boxes.
 
-    :param boxes: A list of bounding boxes (x, y, w, h).
-    :return: A tuple (x, y) representing the click location.
+    Args:
+        boxes: A list of bounding boxes (x, y, w, h).
+
+    Return:
+        Tuple (x, y) representing the click location or None.
     """
-    if len(boxes) == 0:
-        print('Error with get_click_location')
+    if not boxes:
+        print('No boxes detected')
         return None
-    elif len(boxes) == 1:
-        largest_box = boxes[0]
-    else:
-        # Find the largest bounding box
-        largest_box = max(boxes, key=lambda box: box[2] * box[3])
+
+    if isinstance(boxes, tuple) and len(boxes) == 2:
+        x, y = boxes
+        return (x, y)
+    elif isinstance(boxes, tuple) and len(boxes) == 4:
+        boxes = [tuple(boxes)]
+
+    # Find the largest bounding box
+    largest_box = max(boxes, key=lambda box: box[2] * box[3])
 
     # Calculate the center of the largest bounding box
     x, y, w, h = largest_box
