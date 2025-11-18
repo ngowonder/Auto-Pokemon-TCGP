@@ -13,13 +13,11 @@ Auto Pokemon TCG Pocket is designed to automate daily tasks in the Pokemon TCG P
 - Missions: Claim and clear your missions
 - Battle Solo events
 
-
 ## To get started
 
 ### Requirements
 
 - [BlueStacks](https://www.bluestacks.com) (free Android emulator)
-
 - Python version 3.09+
 
 ### Crucial Settings
@@ -30,31 +28,29 @@ The templates are in English.
 #### Bluestacks Display settings
 
 - display resolution: 1600x900
-
 - dpi: 320
-
 - interface scaling: 100% Default
+<img width="839" height="405" alt="bluestacks_setting_display" src="https://github.com/user-attachments/assets/00e97775-b352-4ca2-9580-fb40a8abf703" />
 
 #### Enable "Fix Window Size"
 
 - Menu Button (next to the Minimize button, top of player), so the BlueStack Player doesn't accidentally change size
+<img width="538" height="168" alt="bluestacks_setting_window_size" src="https://github.com/user-attachments/assets/b41d10d5-3a05-4ab5-aec1-f112033a2b8c" />
 
-If your emulator change sizes, change it using this [solution](https://github.com/ngowonder/Auto-Pokemon-TCGP/issues/8#issuecomment-3180825665)
-
+If your emulator change window sizes, change it using this [solution](https://github.com/ngowonder/Auto-Pokemon-TCGP/issues/8#issuecomment-3180825665)
 
 
 ### Instructions to run script
 
 Install python requirements:
 - `pip install -r requirements.txt` or `py -m pip install -r requirements.txt`
-
 Run script on either Start Game screen or the Home screen
 - `py auto_pokemon_tcgp.py` or `py -m auto_pokemon_tcgp`
 
+### Config.yaml
 
 For the `desired_booster_packs`, open config.yaml with a text editor or notepad, use any readable style you like, and add/remove `#` in front of strings.
-
-- If you desire 1 or a few specific pack(s), make sure there is no `#` in front of it and comment out all the rest with `#` in front of it.
+- If you desire 1 or a few specific pack(s), make sure there is no `#` in front of it and comment out all the rest with `#`.
 - If a few booster packs is in the list, it will randomly select one.
 
-- When new card packs get release, refer to top of `auto_pokemon_tcgp.py` or updated `config.yaml` for the complete list of `desired_booster_packs`.
+When new card packs get release, refer to top of `auto_pokemon_tcgp.py` or updated `config.yaml` for the complete list of `desired_booster_packs`.
