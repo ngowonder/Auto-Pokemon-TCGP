@@ -819,10 +819,10 @@ class Bot:
 def new_app_update(sct, monitor):
     if is_template_matched(sct, monitor, "pokemon_tcgp_update_app"):
         print(f"[{current_datetime().strftime('%H:%M:%S')}] new Pokemon TCGP app version - Updating...")
-        click_template(sct, monitor, "go_to_store", confirm_click=True)
+        click_template(sct, monitor, "pokemon_tcgp_go_to_store_btn", confirm_click=True)
 
         # Google Play store
-        if is_template_matched(sct, monitor, "google_play", method="find"):
+        if is_template_matched(sct, monitor, "google_play_screen", method="find"):
             click_template(sct, monitor, "google_play_update_btn", confirm_click=True)
             sleep(17.5)
 
