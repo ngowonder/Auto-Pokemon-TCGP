@@ -185,9 +185,8 @@ class Bot:
             self.check_booster_pack(sct, monitor)
 
         # Booster Pack screen
-        if self.booster_packs_available and is_template_matched(sct, monitor, "pack_select_other_booster_packs_btn", method="find"):
+        if is_template_matched(sct, monitor, "pack_select_other_booster_packs_btn", method="find") and self.booster_packs_available:
             open_booster_packs(sct, monitor)
-            # self.booster_packs_available = False
 
         self.booster_packs_available = False
         go_to_home_screen(sct, monitor)
