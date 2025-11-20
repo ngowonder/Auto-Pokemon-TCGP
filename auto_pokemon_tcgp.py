@@ -220,9 +220,12 @@ class Bot:
                     sleep(1)
 
             boxes = check_template(sct, monitor, "gifts_claim_btn", color_match=False, threshold=0.95)
-            if boxes:
+            if boxes and len(boxes) >= 3:
                 print(f"[{current_datetime().strftime('%H:%M:%S')}] Gifts: at least {len(boxes)} gifts to claim")
+            else:
+                print(f"[{current_datetime().strftime('%H:%M:%S')}] Gifts: {len(boxes)} gifts to claim")
 
+            claimed_count = 0
             while True:
                 claim_btn = check_template(sct, monitor, "gifts_claim_btn")
                 if not claim_btn:
@@ -231,6 +234,7 @@ class Bot:
                 sleep(1)
                 click_ok(sct, monitor)
                 open_pack(sct, monitor)
+                claimed_count += 1
                 if is_template_matched(sct, monitor, "gifts_screen", method="find"):
                     pass  # wait for gifts_screen before next action
 
@@ -239,7 +243,7 @@ class Bot:
                 sleep(1)
                 click_x(sct, monitor)
 
-            print(f"[{current_datetime().strftime('%H:%M:%S')}] Gifts claimed")
+            print(f"[{current_datetime().strftime('%H:%M:%S')}] Gifts claimed {claimed_count} gift packs")
             return
 
     def shop(self, sct, monitor):
@@ -591,10 +595,10 @@ class Bot:
 
         battle_count = 0
         while True:
-            sleep(3)  # use is_template_matched(sct, monitor, screen, method="find") for screen instead of sleep
+            sleep(1.5)  # use is_template_matched(sct, monitor, screen, method="find") for screen instead of sleep
             if not is_template_matched(sct, monitor, "battle_solo_event_stamina"):
                 print(f"[{current_datetime().strftime('%H:%M:%S')}] Battle: Solo Event: no stamina available")
-                sleep(3)
+                # sleep(3)  # NOTE commented for now
                 return False
 
             if not self.select_battle_difficulty(sct, monitor):
@@ -633,17 +637,19 @@ class Bot:
                 if solo_event:
                     print(f"[{current_datetime().strftime('%H:%M:%S')}] Battle: Solo Event available")
                     move_to_click(solo_event)
-                    break
+
+                    # After clicking the solo event, check for drop event immediately
+                    drop_event = finding_template(sct, monitor, "battle_solo_event_drop_event_btn")
+                    if drop_event:
+                        move_to_click(drop_event)
+                        return True
+                    else:
+                        print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to find Drop Event")
+                        return False
             sleep(1)
 
-        # Handle drop event selection
-        drop_event = finding_template(sct, monitor, "battle_solo_event_drop_event_btn")
-        if drop_event:
-            move_to_click(drop_event)
-            return True
-        else:
-            print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to find Drop Event")
-            return False
+        print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to find Solo Event after {max_attempts} attempts")
+        return False
 
     def select_battle_difficulty(self, sct, monitor):
         def find_battle_difficulty_screen(sct, monitor, max_attempts: int = 5):
@@ -750,6 +756,7 @@ class Bot:
         click_template(sct, monitor, "battle_rules_auto_btn", confirm_click=True)
         click_template(sct, monitor, "battle_rules_battle_btn", confirm_click=True)
 
+        battle_duration = battle_check_time if battle_check_time is not None else 0
         if battle_check_time:
             sleep(battle_check_time)
             if DEBUG:
@@ -803,16 +810,16 @@ class Bot:
                 # sleep(3)
                 return True  # victory
 
-            if battle_check_time >= 600:  # if >= 10 mins
+            if battle_duration >= 600:  # if >= 10 mins
                 print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Battle time exceeded 10 mins")
                 return
 
-            i = 8 if battle_check_time < 360 else (3 if battle_check_time < 600 else 0)
-            battle_check_time += i
+            i = 8 if battle_duration < 360 else (3 if battle_duration < 600 else 0)
+            battle_duration += i
             sleep(i)
 
             win32gui.SetForegroundWindow(HWND)
-            battle_check_time += 2
+            battle_duration += 2
             sleep(2)
 
 
