@@ -1013,8 +1013,9 @@ def wonder_pick_random_card(sct, monitor):
 
 
 def check_if_home_screen(sct, monitor):
+    templates = ["home_missions_btn_0", "home_missions_btn_1"]
     if is_template_matched(sct, monitor, "home_btn_1") \
-        and is_template_matched(sct, monitor, "home_wonder_pick_btn"):
+        and is_template_matched(sct, monitor, templates):
         return True
     return False
 
@@ -1032,7 +1033,7 @@ def go_to_home_screen(sct, monitor):
                 move_to_click(home)
                 for _ in range(10):
                     if check_if_home_screen(sct, monitor):
-                        sleep(3)
+                        sleep(1.5)  # TEST cut to 1.5 from 3
                         return True
                     sleep(0.1)
         sleep(0.25)
