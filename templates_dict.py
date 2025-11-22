@@ -137,6 +137,7 @@ TEMPLATES = {
     "battle_solo_event_btn_0": "images/battle_solo_event_btn_0.png",  # "Event underway!"
     # "battle_solo_event_btn_1": "images/battle_solo_event_btn_1.png",  # NOTE do i need the "Ending soon"?
     "battle_solo_event_drop_event_btn": "images/battle_solo_event_drop_event_btn.png",
+    "battle_solo_event_drop_event_screen": "images/battle_solo_event_drop_event_screen.png",
     "battle_solo_event_stamina": "images/battle_solo_event_stamina.png",
     "battle_diff_beginner": "images/battle_solo_diff_beginner.png",
     "battle_diff_intermediate": "images/battle_solo_diff_intermediate.png",

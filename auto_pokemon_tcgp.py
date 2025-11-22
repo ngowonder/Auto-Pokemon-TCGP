@@ -95,7 +95,8 @@ class Bot:
 
     def check_gifts(self, sct, monitor):
         if is_template_matched(sct, monitor, "home_gifts_btn", threshold=0.95):
-            print(f"[{current_datetime().strftime('%H:%M:%S')}] Gifts available")
+            if DEBUG:
+                print(f"\n[DEBUG {current_datetime().strftime('%H:%M:%S')}] Gifts available")
             self.gifts_available = True
             return True
 
@@ -106,7 +107,8 @@ class Bot:
 
     def check_shop(self, sct, monitor):
         if is_template_matched(sct, monitor, "home_shop_btn"):
-            print(f"\n[{current_datetime().strftime('%H:%M:%S')}] Shop's Daily Gifts available")
+            if DEBUG:
+                print(f"\n[DEBUG {current_datetime().strftime('%H:%M:%S')}] Shop's Daily Gifts available")
             self.shop_daily_gifts_available = True
             return True
 
@@ -242,7 +244,8 @@ class Bot:
                 sleep(1)
                 click_x(sct, monitor)
 
-            print(f"[{current_datetime().strftime('%H:%M:%S')}] Gifts claimed {claimed_count} gift packs")
+            if claimed_count != boxes:
+                print(f"[{current_datetime().strftime('%H:%M:%S')}] Gifts: claimed {claimed_count} gift packs")
             return
 
     def shop(self, sct, monitor):
@@ -559,14 +562,14 @@ class Bot:
         if not themed_collection:
             return
 
-        print(f"\n[{current_datetime().strftime('%H:%M:%S')}] Missions: Themed Collections")
+        print(f"[{current_datetime().strftime('%H:%M:%S')}] Missions: Themed Collections")
         move_to_click(themed_collection)
         sleep(1)
 
         self.missions_handle_complete_loop(sct, monitor)
 
         click_back(sct, monitor, confirm_click=True)
-        print(f"\n[{current_datetime().strftime('%H:%M:%S')}] Missions: Themed Collections reward claimed")
+        print(f"[{current_datetime().strftime('%H:%M:%S')}] Missions: Themed Collections reward claimed")
         return
 
     def battle(self, sct, monitor):
@@ -594,10 +597,13 @@ class Bot:
 
         battle_count = 0
         while True:
-            sleep(1.5)  # use is_template_matched(sct, monitor, screen, method="find") for screen instead of sleep
-            if not is_template_matched(sct, monitor, "battle_solo_event_stamina"):
-                print(f"[{current_datetime().strftime('%H:%M:%S')}] Battle: Solo Event: no stamina available")
-                # sleep(3)  # NOTE commented for now
+            if is_template_matched(sct, monitor, "battle_solo_event_drop_event_screen", method="find"):
+                sleep(1)
+                if not is_template_matched(sct, monitor, "battle_solo_event_stamina"):
+                    print(f"[{current_datetime().strftime('%H:%M:%S')}] Battle: Solo Event: no stamina available")
+                    return False
+            else:
+                print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to get to Drop Event screen")
                 return False
 
             if not self.select_battle_difficulty(sct, monitor):
@@ -1033,7 +1039,7 @@ def go_to_home_screen(sct, monitor):
                 move_to_click(home)
                 for _ in range(10):
                     if check_if_home_screen(sct, monitor):
-                        sleep(1.5)  # TEST cut to 1.5 from 3
+                        sleep(3)
                         return True
                     sleep(0.1)
         sleep(0.25)
@@ -1300,7 +1306,7 @@ def restart_script():
 
 def exit_bluestacks(sct, monitor):
     win32gui.SetForegroundWindow(HWND)
-    x = finding_template(sct, monitor, "bluestacks_x")
+    x = finding_template(sct, monitor, "bluestacks_x_btn")
     if not x:
         print(f"[{current_datetime().strftime('%H:%M:%S')}] Failed to find BlueStacks X button")
         return
@@ -1308,7 +1314,7 @@ def exit_bluestacks(sct, monitor):
     print(f"\n[{current_datetime().strftime('%H:%M:%S')}] Exiting BlueStacks")
     move_to_click(x)
     sleep(1)
-    close = finding_template(sct, monitor, "bluestacks_close")
+    close = finding_template(sct, monitor, "bluestacks_close_btn")
     if not close:
         print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to find BlueStacks close button")
         return
