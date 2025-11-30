@@ -173,11 +173,12 @@ class Bot:
             new_app_update(sct, monitor)
             new_data_update(sct, monitor)
 
-            # Go to Home screen if start in-game elsewhere
+            # Go to Home screen if start elsewhere in-game
             if is_template_matched(sct, monitor, "home_btn_0") \
                 and (not self.check_booster_pack(sct, monitor) \
                     or is_template_matched(sct, monitor, "pack_select_other_booster_packs_btn")):
                 go_to_home_screen(sct, monitor)
+                self.booster_packs_available = None
 
             if check_if_home_screen(sct, monitor):
                 if DEBUG:
