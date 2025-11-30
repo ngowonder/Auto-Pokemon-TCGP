@@ -83,6 +83,9 @@ class Bot:
         self.start_run_datetime = current_datetime()
 
     def check_booster_pack(self, sct, monitor):
+        if self.booster_packs_available:
+            return True
+
         for _ in range(6):  # 1.5s should be perfect
             if is_template_matched(sct, monitor, "pack_can_open_a_booster_pack"):
                 self.booster_packs_available = True
@@ -94,6 +97,9 @@ class Bot:
         return False
 
     def check_gifts(self, sct, monitor):
+        if self.gifts_available:
+            return True
+
         if is_template_matched(sct, monitor, "home_gifts_btn", threshold=0.95):
             if DEBUG:
                 print(f"\n[DEBUG {current_datetime().strftime('%H:%M:%S')}] Gifts available")
@@ -106,6 +112,9 @@ class Bot:
         return False
 
     def check_shop(self, sct, monitor):
+        if self.shop_daily_gifts_available:
+            return True
+
         if is_template_matched(sct, monitor, "home_shop_btn"):
             if DEBUG:
                 print(f"\n[DEBUG {current_datetime().strftime('%H:%M:%S')}] Shop's Daily Gifts available")
@@ -116,6 +125,9 @@ class Bot:
         return False
 
     def check_missions(self, sct, monitor):
+        if self.missions_rewards_available:
+            return True
+
         max_attempts = 120
         for _ in range(max_attempts):
             if is_template_matched(sct, monitor, "home_missions_btn_0"):
@@ -133,7 +145,10 @@ class Bot:
             return False
 
     def check_level_up(self, sct, monitor):
-        """NOTE TODO handle_level_up"""
+        """NOTE TODO handle_level_up
+        if self.have_leveled_up:
+            find_template
+        else:"""
         max_attempts = 7
         for _ in range(max_attempts):
             if is_template_matched(sct, monitor, "level_up"):
@@ -158,8 +173,10 @@ class Bot:
             new_app_update(sct, monitor)
             new_data_update(sct, monitor)
 
+            # Go to Home screen if start in-game elsewhere
             if is_template_matched(sct, monitor, "home_btn_0") \
-                and (not self.check_booster_pack(sct, monitor) or is_template_matched(sct, monitor, "pack_select_other_booster_packs_btn")):
+                and (not self.check_booster_pack(sct, monitor) \
+                    or is_template_matched(sct, monitor, "pack_select_other_booster_packs_btn")):
                 go_to_home_screen(sct, monitor)
 
             if check_if_home_screen(sct, monitor):
@@ -181,8 +198,12 @@ class Bot:
             return
 
     def booster_packs(self, sct, monitor):
+        if self.booster_packs_available is False:
+            return
+
         # Home screen
-        if (self.booster_packs_available is None or self.booster_packs_available) and check_if_home_screen(sct, monitor):
+        if (self.booster_packs_available is None or self.booster_packs_available) \
+            and check_if_home_screen(sct, monitor):
             go_to_booster_pack_screen(sct, monitor)
             self.check_booster_pack(sct, monitor)
 
@@ -195,8 +216,7 @@ class Bot:
         return
 
     def gifts(self, sct, monitor):
-        # if not self.gifts_available and go_to_home_screen(sct, monitor):  # NOTE which is better
-        if self.gifts_available is None and go_to_home_screen(sct, monitor):
+        if not self.gifts_available and go_to_home_screen(sct, monitor):
             self.check_gifts(sct, monitor)
 
         if not self.gifts_available:
@@ -221,10 +241,11 @@ class Bot:
                     sleep(1)
 
             boxes = check_template(sct, monitor, "gifts_claim_btn", color_match=False, threshold=0.95)
-            if boxes and len(boxes) >= 3:
-                print(f"[{current_datetime().strftime('%H:%M:%S')}] Gifts: at least {len(boxes)} gifts to claim")
-            else:
-                print(f"[{current_datetime().strftime('%H:%M:%S')}] Gifts: {len(boxes)} gifts to claim")
+            if boxes is not None:
+                if len(boxes) >= 3:
+                    print(f"[{current_datetime().strftime('%H:%M:%S')}] Gifts: at least {len(boxes)} gifts to claim")
+                else:
+                    print(f"[{current_datetime().strftime('%H:%M:%S')}] Gifts: {len(boxes)} gifts to claim")
 
             claimed_count = 0
             while True:
@@ -244,7 +265,7 @@ class Bot:
                 sleep(1)
                 click_x(sct, monitor)
 
-            if claimed_count != boxes:
+            if boxes is not None and claimed_count != len(boxes):
                 print(f"[{current_datetime().strftime('%H:%M:%S')}] Gifts: claimed {claimed_count} gift packs")
             return
 
@@ -367,7 +388,7 @@ class Bot:
                 continue
 
             # case when Chansey or Rare Pick covers "home_wonder_pick_sneak_peeks"
-            ok_btns = ["ok_btn", "wonder_pick_sneak_peeks_ok_btn"]
+            ok_btns = ["ok_btn", "wonder_pick_sneak_peek_ok_btn"]
             found_ok_btn = None
             for i in range(60):
                 if found_ok_btn:
@@ -376,7 +397,7 @@ class Bot:
                     matched_ok_btn = check_template(sct, monitor, ok_btn)
                     if matched_ok_btn:
                         found_ok_btn = True
-                        if ok_btn == "wonder_pick_sneak_peeks_ok_btn":
+                        if ok_btn == "wonder_pick_sneak_peek_ok_btn":
                             self.wonder_pick_sneak_peeks_available = True
                         move_to_click(matched_ok_btn)
                         break
@@ -395,23 +416,16 @@ class Bot:
                 items = ["wonder_pick_pick_item", "wonder_pick_pick_items"]
                 if pick == "wonder_pick_bonus" and is_template_matched(sct, monitor, items):
                     print(f"[{current_datetime().strftime('%H:%M:%S')}] Wonder Pick an Item")
+                    for _ in range(2):
+                        click_tap_to_proceed(sct, monitor, sleep_duration=2)
                 else:
                     print(f"[{current_datetime().strftime('%H:%M:%S')}] Wonder Pick a Card")
-
-                for _ in range(2):
                     click_tap_to_proceed(sct, monitor, sleep_duration=2)
 
                 # for _ in range(120):
                 while True:
-                    if is_template_matched(sct, monitor, "card_milestone"):  # collection milestones
-                        click_tap_to_proceed(sct, monitor)
-                        sleep(3)
-
-                    if is_template_matched(sct, monitor, "card_new_dex"):
-                        for _ in range(2):
-                            click_skip(sct, monitor)
-                            sleep(1)
-                        click_next(sct, monitor)
+                    handle_card_collection_milestone(sct, monitor)
+                    handle_card_new_dex(sct, monitor)
 
                     if is_template_matched(sct, monitor, "wonder_pick_results_screen"):  # Fallback catch
                         click_tap_to_proceed(sct, monitor)
@@ -427,7 +441,7 @@ class Bot:
         return
 
     def missions(self, sct, monitor):
-        if self.missions_rewards_available is None and go_to_home_screen(sct, monitor):
+        if not self.missions_rewards_available and go_to_home_screen(sct, monitor):
             self.check_missions(sct, monitor)
 
         if not self.missions_rewards_available:
@@ -473,18 +487,18 @@ class Bot:
         complete_all = check_template(sct, monitor, "missions_complete_all_btn", color_match=True)
         if complete_all:
             move_to_click(complete_all)
-            sleep(5)
+            sleep(4.5)
 
             for i in range(5):
                 complete_all = check_template(sct, monitor, "missions_complete_all_btn", color_match=True)
                 if complete_all:
                     move_to_click(complete_all)
-                    click_ok(sct, monitor, sleep_duration=3, confirm_click=True)
+                    sleep(3)
 
                 ok_btn = check_template(sct, monitor, "ok_btn")
                 if ok_btn:
                     move_to_click(ok_btn)
-                    sleep(3)
+                    sleep(4.5)
 
                 if i > 3 and not is_template_matched(sct, monitor, "missions_complete_all_btn", color_match=True):
                     return True
@@ -961,20 +975,12 @@ def open_pack(sct, monitor):
         open_pack_slice(sct, monitor)
         click_template_nonstop_until(sct, monitor, click_template="tap_and_hold_btn", stop_templates="next_btn", click_hold=True, click_hold_duration=2.0)
         click_next(sct, monitor)
-        sleep(6)
+        sleep(7.5)
         if not is_template_matched(sct, monitor, "pack_open_slice"):
             break
 
-    if is_template_matched(sct, monitor, "card_milestone"):  # collection milestones
-        click_tap_to_proceed(sct, monitor)
-        sleep(3)
-
-    if is_template_matched(sct, monitor, "card_new_dex"):  # if new cards, register to dex
-        for _ in range(2):
-            click_skip(sct, monitor)
-            sleep(1)
-        click_next(sct, monitor)
-        sleep(1)
+    handle_card_collection_milestone(sct, monitor)
+    handle_card_new_dex(sct, monitor)
 
     if is_template_matched(sct, monitor, "ok_btn"):
         click_ok(sct, monitor)  # claim shinedust
@@ -994,11 +1000,26 @@ def open_pack_slice(sct, monitor):
 
         boxes = offset_boxes(boxes, zero_w_h=True)
         mouse_drag_scroll(boxes, x_offset=500, duration=0.5, drag=True)
-        # pyautogui.moveTo(x_left, y_left, duration=0.5)
-        # pyautogui.drag(xOffset=500, yOffset=0, duration=0.5, button='left')
         sleep(0.25)
     else:
         print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to slice open pack")
+    return
+
+
+def handle_card_collection_milestone(sct, monitor):
+    if is_template_matched(sct, monitor, "card_milestone"):  # card collection milestone
+        click_tap_to_proceed(sct, monitor)
+        sleep(3)
+    return
+
+
+def handle_card_new_dex(sct, monitor):
+    if is_template_matched(sct, monitor, "card_new_dex"):  # if new cards, register to dex
+        for _ in range(2):
+            click_skip(sct, monitor)
+            sleep(1)
+        click_next(sct, monitor)
+        sleep(1)
     return
 
 
@@ -1022,6 +1043,7 @@ def check_if_home_screen(sct, monitor):
     templates = ["home_missions_btn_0", "home_missions_btn_1"]
     if is_template_matched(sct, monitor, "home_btn_1") \
         and is_template_matched(sct, monitor, templates):
+        # and is_template_matched(sct, monitor, "home_wonder_pick_btn"):  # NOTE make it stricter?
         return True
     return False
 
