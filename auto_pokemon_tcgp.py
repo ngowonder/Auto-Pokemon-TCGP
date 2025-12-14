@@ -47,7 +47,6 @@ desired_booster_packs = random.choice(config["desired_booster_packs"]).lower()
 enable_check_pack_screen = config["enable_check_pack_screen"]
 enable_wonder_pick = config["enable_wonder_pick"]
 enable_special_wonder_picks = config["enable_special_wonder_picks"]
-enable_check_level_up = config["enable_check_level_up"]
 enable_exit_app = config["enable_exit_app"]
 
 enable_event_battle = config["enable_event_battle"]
@@ -144,22 +143,76 @@ class Bot:
             print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Couldn't find Missions from Home screen")
             return False
 
+    def check_news(self, sct, monitor):
+        if is_template_matched(sct, monitor, "news_window"):
+            click_x(sct, monitor)
+        return
+
     def check_level_up(self, sct, monitor):
-        """NOTE TODO handle_level_up
+        if not self.have_leveled_up:
+            if is_template_matched(sct, monitor, "home_btn_level_up"):
+                self.have_leveled_up = True
+        return
+
+    def handle_level_up(self, sct, monitor):
         if self.have_leveled_up:
-            find_template
-        else:"""
-        max_attempts = 7
-        for _ in range(max_attempts):
-            if is_template_matched(sct, monitor, "level_up"):
-                click_tap_to_proceed(sct, monitor)
-                if is_template_matched(sct, monitor, "level_up_unlocked"):
-                    click_ok(sct, monitor)
-                print(f"[{current_datetime().strftime('%H:%M:%S')}] Leveled up")
-                return True
-            sleep(1)
-        else:
-            return False
+            max_attempts = 7
+            for _ in range(max_attempts):
+                if is_template_matched(sct, monitor, "level_up"):
+                    click_tap_to_proceed(sct, monitor)
+                    if is_template_matched(sct, monitor, "level_up_unlocked"):
+                        click_ok(sct, monitor)
+                    print(f"[{current_datetime().strftime('%H:%M:%S')}] Leveled up")
+                    return True
+                sleep(1)
+            else:
+                return False
+
+    def new_app_update(self, sct, monitor):
+        if is_template_matched(sct, monitor, "pokemon_tcgp_update_app"):
+            print(f"[{current_datetime().strftime('%H:%M:%S')}] new Pokemon TCGP app version - Updating...")
+            click_template(sct, monitor, "pokemon_tcgp_go_to_store_btn", confirm_click=True)
+
+            # Google Play store
+            if is_template_matched(sct, monitor, "google_play_screen", method="find"):
+                click_template(sct, monitor, "google_play_update_btn", confirm_click=True)
+                sleep(17.5)
+
+                max_attempts = 120
+                for _ in range(max_attempts):
+                    play_btn = check_template(sct, monitor, "google_play_play_btn")
+                    if play_btn:
+                        move_to_click(play_btn)
+                        print(f"[{current_datetime().strftime('%H:%M:%S')}] new Pokemon TCGP app updated")
+                        return
+                    sleep(1)
+            else:
+                print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to update Pokemon TCGP app")
+                if enable_exit_app:
+                    exit_bluestacks(sct, monitor)
+                else:
+                    print(f"[{current_datetime().strftime('%H:%M:%S')}] Quitting Auto Pokemon TCGP")
+                    sys.exit()
+
+    def new_data_update(self, sct, monitor):
+        if is_template_matched(sct, monitor, "pokemon_tcgp_update_data"):
+            print(f"[{current_datetime().strftime('%H:%M:%S')}] new Pokemon TCGP data update - Downloading...")
+            click_ok(sct, monitor)
+            sleep(17.5)
+
+            max_attempts = 120
+            for _ in range(max_attempts):
+                if is_template_matched(sct, monitor, "start_screen") or self.go_to_home_screen(sct, monitor):
+                    print(f"[{current_datetime().strftime('%H:%M:%S')}] new Pokemon TCGP data downloaded")
+                    return
+                sleep(1)
+            else:
+                print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to download Pokemon TCGP data")
+                if enable_exit_app:
+                    exit_bluestacks(sct, monitor)
+                else:
+                    print(f"[{current_datetime().strftime('%H:%M:%S')}] Quitting Auto Pokemon TCGP")
+                    sys.exit()
 
     def start_game(self, sct, monitor):
         max_attempts = 360
@@ -170,17 +223,19 @@ class Bot:
                 move_to_click(start)
                 sleep(5)
 
-            new_app_update(sct, monitor)
-            new_data_update(sct, monitor)
+            self.new_app_update(sct, monitor)
+            self.new_data_update(sct, monitor)
 
             # Go to Home screen if start elsewhere in-game
             if is_template_matched(sct, monitor, "home_btn_0") \
                 and (not self.check_booster_pack(sct, monitor) \
                     or is_template_matched(sct, monitor, "pack_select_other_booster_packs_btn")):
-                go_to_home_screen(sct, monitor)
+                self.go_to_home_screen(sct, monitor)
                 self.booster_packs_available = None
 
-            if check_if_home_screen(sct, monitor):
+            self.check_news(sct, monitor)
+
+            if self.check_if_home_screen(sct, monitor):
                 if DEBUG:
                     print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Started at Home screen")
                 self.check_gifts(sct, monitor)
@@ -198,33 +253,231 @@ class Bot:
                 exit_bluestacks(sct, monitor)
             return
 
+    def check_if_home_screen(self, sct, monitor):
+        templates = ["home_missions_btn_0", "home_missions_btn_1"]
+        if is_template_matched(sct, monitor, "home_btn_1") \
+            and is_template_matched(sct, monitor, templates):
+            return True
+        return False
+
+    def go_to_home_screen(self, sct, monitor):
+        if self.check_if_home_screen(sct, monitor):
+            return True
+
+        self.check_level_up(sct, monitor)
+
+        templates = ["home_btn_0", "home_btn_1", "home_btn_level_up"]
+        max_attempts = 120
+        for _ in range(max_attempts):
+            for template in templates:
+                home = check_template(sct, monitor, template)
+                if home:
+                    move_to_click(home)
+                    for _ in range(10):
+                        if self.check_if_home_screen(sct, monitor):
+                            sleep(5)
+                            if self.have_leveled_up:
+                                self.handle_level_up(sct, monitor)
+                            return True
+                        sleep(0.1)
+            sleep(0.25)
+        else:
+            print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Couldn't get to Home screen")
+            return False
+
+    def go_to_booster_pack_screen(self, sct, monitor):
+        if is_template_matched(sct, monitor, "pack_select_other_booster_packs_btn"):
+            return True
+
+        self.go_to_home_screen(sct, monitor)
+
+        if DEBUG:
+            print(f"\n[DEBUG {current_datetime().strftime('%H:%M:%S')}] Opening Booster Pack screen")
+
+        # different approach to "home_pack" template, which gets updated constantly
+        home_pack_btn = "home_pack_expansion_btn"
+        home_pack = check_template(sct, monitor, home_pack_btn)
+        if home_pack:
+            home_pack_loc = offset_boxes(home_pack, x_offset=-200, y_offset=150)
+            while True:
+                move_to_click(home_pack_loc)
+                sleep(1)
+                if not check_template(sct, monitor, "home_wonder_pick_btn"):
+                    break
+        else:
+            print(f"\n[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to find {home_pack_btn} at Home screen")
+            return False
+
+        templates = ["pack_can_open_a_booster_pack", "pack_select_other_booster_packs_btn"]
+        max_attempts = 40
+        for _ in range(max_attempts):
+            for template in templates:
+                pack_screen = check_template(sct, monitor, template)
+                if pack_screen:
+                    if DEBUG and template == "pack_can_open_a_booster_pack":
+                        print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] can open a Booster Pack")
+                    elif DEBUG:
+                        print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] at Booster Pack screen")
+                    return True
+            sleep(0.25)
+        else:
+            print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to get to Booster Pack screen")
+            return False
+
     def booster_packs(self, sct, monitor):
         if self.booster_packs_available is False:
             return
 
         # Home screen
         if (self.booster_packs_available is None or self.booster_packs_available) \
-            and check_if_home_screen(sct, monitor):
-            go_to_booster_pack_screen(sct, monitor)
+            and self.check_if_home_screen(sct, monitor):
+            self.go_to_booster_pack_screen(sct, monitor)
             self.check_booster_pack(sct, monitor)
 
         # Booster Pack screen
         if is_template_matched(sct, monitor, "pack_select_other_booster_packs_btn", method="find") and self.booster_packs_available:
-            open_booster_packs(sct, monitor)
+            self.open_booster_packs(sct, monitor)
 
         self.booster_packs_available = False
-        go_to_home_screen(sct, monitor)
+        self.go_to_home_screen(sct, monitor)
+        self.check_news(sct, monitor)
+        return
+
+    def open_booster_packs(self, sct, monitor, booster_pack: str = desired_booster_packs):
+        print(f"\n[{current_datetime().strftime('%H:%M:%S')}] Booster Pack: opening '{booster_pack}' pack")
+
+        self.select_booster_packs(sct, monitor, booster_pack=booster_pack)
+        sleep(1)
+        if is_template_matched(sct, monitor, "pack_can_open_a_booster_pack"):
+            sleep(4)
+
+        found_package = None
+        select_packages = ["pack_select_package_0", "pack_select_package_1"]
+        while not found_package:
+            for package in select_packages:
+                pack = check_template(sct, monitor, package)
+                if pack:
+                    move_to_click(pack)
+                    sleep(0.5)
+                    if is_template_matched(sct, monitor, "pack_open_btn"):
+                        found_package = True
+                    break
+
+        click_template(sct, monitor, "pack_open_btn")
+        click_skip(sct, monitor)
+        self.open_pack(sct, monitor)
+
+        print(f"[{current_datetime().strftime('%H:%M:%S')}] Booster Pack: finish opening '{booster_pack}'")
+        return
+
+    def select_booster_packs(self, sct, monitor, booster_pack: str = desired_booster_packs):
+        """Select Desired Pack from Select Expansion window"""
+        series_name, booster_pack_key = self.find_pack_in_series(booster_pack=booster_pack)
+        if not booster_pack_key:
+            print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to find Desired Pack '{booster_pack}' in template dict")
+            click_x(sct, monitor)
+            return
+
+        if DEBUG:
+            print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Booster Pack: selecting '{series_name}': '{booster_pack}'")
+
+        click_template(sct, monitor, "pack_select_other_booster_packs_btn", confirm_click=True)
+
+        # Select Expansion window
+        select_expansion = finding_template(sct, monitor, "pack_select_expansion_window")
+        select_expansion = offset_boxes(select_expansion, y_offset=375)
+
+        click_template(sct, monitor, series_name, color_match=False)
+
+        max_scroll_attempts = 10
+        for i in range(max_scroll_attempts):
+            booster_pack_loc = check_template(sct, monitor, booster_pack_key, threshold=0.8)
+            if booster_pack_loc:
+                move_to_click(booster_pack_loc)
+                sleep(1)
+                if is_template_matched(sct, monitor, "pack_select_other_booster_packs_btn", method="find"):
+                    return True
+            else:
+                # scroll down to reveal more packs
+                mouse_drag_scroll(select_expansion, y_offset=-350, duration=0.5)
+                if i > max_scroll_attempts-3:
+                    sleep(0.50)
+        else:
+            print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to find Pack '{booster_pack}' in {series_name} after {max_scroll_attempts} attempts")
+            click_x(sct, monitor)
+            return
+
+    def find_pack_in_series(self, booster_pack: str = desired_booster_packs):
+        """Find which series a pack belongs to and return the template key"""
+        for series_name, series_packs in BOOSTER_PACK_TO_TEMPLATES.items():
+            if booster_pack in series_packs:
+                return series_name, series_packs[booster_pack]
+        return None, None
+
+    def open_pack(self, sct, monitor):
+        # while loop for multiple card packs
+        # multiple card packs is super rare occurrence (happened once as gift)
+        if not is_template_matched(sct, monitor, "pack_open_slice", method="find", max_attempts=30):
+            print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] No pack found to slices open")
+            return
+
+        for _ in range(10):
+            self.open_pack_slice(sct, monitor)
+            click_template_nonstop_until(sct, monitor, click_template="tap_and_hold_btn", stop_templates="next_btn", click_hold=True, click_hold_duration=2.0)
+            click_next(sct, monitor)
+            sleep(7.5)
+            if not is_template_matched(sct, monitor, "pack_open_slice"):
+                break
+
+        self.handle_card_collection_milestone(sct, monitor)
+        self.handle_card_new_dex(sct, monitor)
+
+        if is_template_matched(sct, monitor, "ok_btn"):
+            click_ok(sct, monitor)  # claim shinedust
+            sleep(1)
+        return
+
+    def open_pack_slice(self, sct, monitor):
+        """Trace line to open Pack"""
+        for i in range(20):
+            open_slice = check_template(sct, monitor, "pack_open_slice", color_match=False, threshold=0.85)
+            if not open_slice:
+                return True
+
+            # Find the bounding box with the smallest x-coordinate
+            boxes = min(open_slice, key=lambda box: box[0])
+
+            boxes = offset_boxes(boxes, zero_w_h=True)
+            mouse_drag_scroll(boxes, x_offset=500, duration=0.5, drag=True)
+            sleep(0.25)
+        else:
+            print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to slice open pack")
+        return
+
+    def handle_card_collection_milestone(self, sct, monitor):
+        if is_template_matched(sct, monitor, "card_milestone"):  # card collection milestone
+            click_tap_to_proceed(sct, monitor)
+            sleep(3)
+        return
+
+    def handle_card_new_dex(self, sct, monitor):
+        if is_template_matched(sct, monitor, "card_new_dex"):  # if new cards, register to dex
+            for _ in range(2):
+                click_skip(sct, monitor)
+                sleep(1)
+            click_next(sct, monitor)
+            sleep(1)
         return
 
     def gifts(self, sct, monitor):
-        if not self.gifts_available and go_to_home_screen(sct, monitor):
+        if not self.gifts_available and self.go_to_home_screen(sct, monitor):
             self.check_gifts(sct, monitor)
 
         if not self.gifts_available:
             return
 
         print(f"\n[{current_datetime().strftime('%H:%M:%S')}] Gifts")
-        if go_to_home_screen(sct, monitor):
+        if self.go_to_home_screen(sct, monitor):
             click_template(sct, monitor, "home_gifts_btn", confirm_click=True)
 
         # Gifts screen
@@ -256,7 +509,7 @@ class Bot:
                 move_to_click(claim_btn)
                 sleep(1)
                 click_ok(sct, monitor)
-                open_pack(sct, monitor)
+                self.open_pack(sct, monitor)
                 claimed_count += 1
                 if is_template_matched(sct, monitor, "gifts_screen", method="find"):
                     pass  # wait for gifts_screen before next action
@@ -272,14 +525,14 @@ class Bot:
 
     def shop(self, sct, monitor):
         # if not self.shop_daily_gifts_available and go_to_home_screen(sct, monitor):  # NOTE which is better
-        if self.shop_daily_gifts_available is None and go_to_home_screen(sct, monitor):
+        if self.shop_daily_gifts_available is None and self.go_to_home_screen(sct, monitor):
             self.check_shop(sct, monitor)
 
         if not self.shop_daily_gifts_available:
             return
 
         print(f"\n[{current_datetime().strftime('%H:%M:%S')}] Shop")
-        if go_to_home_screen(sct, monitor):
+        if self.go_to_home_screen(sct, monitor):
             click_template(sct, monitor, "home_shop_btn", confirm_click=True)
 
         daily_gift = finding_template(sct, monitor, "shop_daily_gift")
@@ -338,7 +591,7 @@ class Bot:
 
             # wait for Sneak Peek screen
             if is_template_matched(sct, monitor, "wonder_pick_sneak_peek_take_a_peek_btn_0"):
-                wonder_pick_random_card(sct, monitor)
+                self.wonder_pick_random_card(sct, monitor)
                 click_template(sct, monitor, "wonder_pick_sneak_peek_take_a_peek_btn_1", confirm_click=True)
 
             # normal Random Card Pick screen
@@ -350,16 +603,16 @@ class Bot:
             return False
 
     def wonder_pick(self, sct, monitor):
-        if self.wonder_pick_sneak_peeks_available is None and go_to_home_screen(sct, monitor):
+        if self.wonder_pick_sneak_peeks_available is None and self.go_to_home_screen(sct, monitor):
             self.check_wonder_pick_sneak_peeks(sct, monitor)
 
         print(f"\n[{current_datetime().strftime('%H:%M:%S')}] Wonder Pick")
-        if go_to_home_screen(sct, monitor):
+        if self.go_to_home_screen(sct, monitor):
             click_template(sct, monitor, "home_wonder_pick_btn", confirm_click=True)
 
         if not is_template_matched(sct, monitor, "wonder_pick_screen", method="find"):
             print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to get to Wonder Pick screen. Returning to Home...")
-            go_to_home_screen(sct, monitor)
+            self.go_to_home_screen(sct, monitor)
             return
 
         # Wonder Pick screen
@@ -383,7 +636,7 @@ class Bot:
             sleep(0.5)
 
             if pick in SPECIAL_PICKS and is_template_matched(sct, monitor, "wonder_pick_no_stamina"):
-                print(f"[{current_datetime().strftime('%H:%M:%S')}] Wonder Pick: no stamina for {pick}")
+                print(f"[{current_datetime().strftime('%H:%M:%S')}] Wonder Pick: no stamina for '{pick}'")
                 click_x(sct, monitor, confirm_click=True)
                 mouse_drag_scroll(matched_pick, y_offset=-250)
                 continue
@@ -412,7 +665,7 @@ class Bot:
                 self.handle_wonder_pick_sneak_peeks(sct, monitor)
 
             if is_template_matched(sct, monitor, "wonder_pick_pick_a_card_screen", method="find"):
-                wonder_pick_random_card(sct, monitor)
+                self.wonder_pick_random_card(sct, monitor)
 
                 items = ["wonder_pick_pick_item", "wonder_pick_pick_items"]
                 if pick == "wonder_pick_bonus" and is_template_matched(sct, monitor, items):
@@ -425,8 +678,8 @@ class Bot:
 
                 # for _ in range(120):
                 while True:
-                    handle_card_collection_milestone(sct, monitor)
-                    handle_card_new_dex(sct, monitor)
+                    self.handle_card_collection_milestone(sct, monitor)
+                    self.handle_card_new_dex(sct, monitor)
 
                     if is_template_matched(sct, monitor, "wonder_pick_results_screen"):  # Fallback catch
                         click_tap_to_proceed(sct, monitor)
@@ -438,18 +691,52 @@ class Bot:
                     sleep(0.25)
         if DEBUG:
             print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Wonder Pick completed")
-        go_to_home_screen(sct, monitor)
+        self.go_to_home_screen(sct, monitor)
         return
 
+    def wonder_pick_random_card(self, sct, monitor):
+        cards = finding_template(sct, monitor, "wonder_pick_pick_a_card_back", group_rectangles=True)
+        if len(cards) > 0:
+            if DEBUG:
+                print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Found {len(cards)} card backs to randomly choose")
+                # print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Cards are: {cards}")
+            card = random.choice(cards)
+            card_index = cards.index(card)
+            print(f"[{current_datetime().strftime('%H:%M:%S')}] Wonder Pick: random card choice: #{card_index+1} {card}")
+            move_to_click(card)
+            sleep(7.5)
+        else:
+            print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to find card backs to randomly pick")
+        return
+
+    def go_to_missions_screen(self, sct, monitor):
+        if self.go_to_home_screen(sct, monitor):
+            templates = ["home_missions_btn_0", "home_missions_btn_1"]
+            max_attempts = 120
+            for _ in range(max_attempts):
+                for template in templates:
+                    missions = check_template(sct, monitor, template)
+                    if missions:
+                        move_to_click(missions)
+                        for _ in range(10):
+                            if not is_template_matched(sct, monitor, template):
+                                sleep(5)
+                                return True
+                            sleep(0.1)
+                sleep(0.25)
+            else:
+                print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Couldn't get to Home screen")
+                return False
+
     def missions(self, sct, monitor):
-        if not self.missions_rewards_available and go_to_home_screen(sct, monitor):
+        if not self.missions_rewards_available and self.go_to_home_screen(sct, monitor):
             self.check_missions(sct, monitor)
 
         if not self.missions_rewards_available:
             return
 
         print(f"\n[{current_datetime().strftime('%H:%M:%S')}] Missions")
-        go_to_missions_screen(sct, monitor)
+        self.go_to_missions_screen(sct, monitor)
 
         while True:
             self.missions_handle_complete_all_loop(sct, monitor)
@@ -463,7 +750,7 @@ class Bot:
                 self.missions_handle_complete_all_loop(sct, monitor)  # for case when user has premium
                 break
 
-            if check_if_home_screen(sct, monitor):
+            if self.check_if_home_screen(sct, monitor):
                 print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Missions: unexpectedly at Home screen")
                 return
 
@@ -481,12 +768,15 @@ class Bot:
             boxes = offset_boxes(boxes, x_offset=0, y_offset=-400)
             mouse_drag_scroll(boxes, x_offset=-100, duration=0.2, drag=True)
             return True
+        print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Error during Missions horizontal scroll")
         return False
 
     def missions_handle_complete_all_loop(self, sct, monitor):
         """handle dex missions, bonus week, etc"""
         complete_all = check_template(sct, monitor, "missions_complete_all_btn", color_match=True)
         if complete_all:
+            if DEBUG:
+                print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Handling Missions complete loop")
             move_to_click(complete_all)
             sleep(4.5)
 
@@ -520,6 +810,8 @@ class Bot:
                     continue
                 return
 
+            if DEBUG:
+                print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Handling Missions complete loop")
             move_to_click(small_complete)
             sleep(2)
 
@@ -531,7 +823,7 @@ class Bot:
                     ok_btn = check_template(sct, monitor, "ok_btn")
                     if ok_btn:
                         move_to_click(ok_btn)
-                    sleep(1.5)
+                    sleep(3)
                 sleep(4)
 
             """
@@ -544,7 +836,7 @@ class Bot:
                 return
             """
 
-            if check_if_home_screen(sct, monitor):
+            if self.check_if_home_screen(sct, monitor):
                 return
             sleep(1)
 
@@ -587,21 +879,36 @@ class Bot:
         print(f"[{current_datetime().strftime('%H:%M:%S')}] Missions: Themed Collections reward claimed")
         return
 
+    def go_to_battle_screen(self, sct, monitor):
+        if self.go_to_home_screen(sct, monitor):
+            templates = ["home_battle_btn_0", "home_battle_btn_0_dot"]
+            max_attempts = 120
+            for _ in range(max_attempts):
+                for template in templates:
+                    battle = check_template(sct, monitor, template)
+                    if battle:
+                        move_to_click(battle)
+                        for _ in range(10):
+                            if not is_template_matched(sct, monitor, template):
+                                sleep(3)
+                                return True
+                            sleep(0.1)
+                sleep(0.25)
+            else:
+                print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Couldn't get to Battle screen")
+                return False
+
     def battle(self, sct, monitor):
         print(f"\n[{current_datetime().strftime('%H:%M:%S')}] Battle")
 
-        if go_to_home_screen(sct, monitor):
-            go_to_battle_screen(sct, monitor)
+        if self.go_to_home_screen(sct, monitor):
+            self.go_to_battle_screen(sct, monitor)
 
         self.battle_solo_event(sct, monitor)
 
         if DEBUG:
             print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Battle finished")
-        if is_template_matched(sct, monitor, "home_btn_level_up"):
-            go_to_home_screen(sct, monitor)
-            self.check_level_up(sct, monitor)
-        else:
-            go_to_home_screen(sct, monitor)
+        self.go_to_home_screen(sct, monitor)
         return
 
     def battle_solo_event(self, sct, monitor):
@@ -841,314 +1148,6 @@ class Bot:
             win32gui.SetForegroundWindow(HWND)
             battle_duration += 2
             sleep(2)
-
-
-def new_app_update(sct, monitor):
-    if is_template_matched(sct, monitor, "pokemon_tcgp_update_app"):
-        print(f"[{current_datetime().strftime('%H:%M:%S')}] new Pokemon TCGP app version - Updating...")
-        click_template(sct, monitor, "pokemon_tcgp_go_to_store_btn", confirm_click=True)
-
-        # Google Play store
-        if is_template_matched(sct, monitor, "google_play_screen", method="find"):
-            click_template(sct, monitor, "google_play_update_btn", confirm_click=True)
-            sleep(17.5)
-
-            max_attempts = 120
-            for _ in range(max_attempts):
-                play_btn = check_template(sct, monitor, "google_play_play_btn")
-                if play_btn:
-                    move_to_click(play_btn)
-                    print(f"[{current_datetime().strftime('%H:%M:%S')}] new Pokemon TCGP app updated")
-                    return
-                sleep(1)
-        else:
-            print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to update Pokemon TCGP app")
-            if enable_exit_app:
-                exit_bluestacks(sct, monitor)
-            else:
-                print(f"[{current_datetime().strftime('%H:%M:%S')}] Quitting Auto Pokemon TCGP")
-                sys.exit()
-
-
-def new_data_update(sct, monitor):
-    if is_template_matched(sct, monitor, "pokemon_tcgp_update_data"):
-        print(f"[{current_datetime().strftime('%H:%M:%S')}] new Pokemon TCGP data update - Downloading...")
-        click_ok(sct, monitor)
-        sleep(17.5)
-
-        max_attempts = 120
-        for _ in range(max_attempts):
-            if is_template_matched(sct, monitor, "start_screen") or go_to_home_screen(sct, monitor):
-                print(f"[{current_datetime().strftime('%H:%M:%S')}] new Pokemon TCGP data downloaded")
-                return
-            sleep(1)
-        else:
-            print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to download Pokemon TCGP data")
-            if enable_exit_app:
-                exit_bluestacks(sct, monitor)
-            else:
-                print(f"[{current_datetime().strftime('%H:%M:%S')}] Quitting Auto Pokemon TCGP")
-                sys.exit()
-
-
-def open_booster_packs(sct, monitor, booster_pack: str = desired_booster_packs):
-    print(f"\n[{current_datetime().strftime('%H:%M:%S')}] Booster Pack: opening '{booster_pack}' pack")
-
-    select_booster_packs(sct, monitor, booster_pack=booster_pack)
-    sleep(1)
-    if is_template_matched(sct, monitor, "pack_can_open_a_booster_pack"):
-        sleep(4)
-
-    found_package = None
-    select_packages = ["pack_select_package_0", "pack_select_package_1"]
-    while not found_package:
-        for package in select_packages:
-            pack = check_template(sct, monitor, package)
-            if pack:
-                move_to_click(pack)
-                sleep(0.5)
-                if is_template_matched(sct, monitor, "pack_open_btn"):
-                    found_package = True
-                break
-
-    click_template(sct, monitor, "pack_open_btn")
-    click_skip(sct, monitor)
-    open_pack(sct, monitor)
-
-    print(f"[{current_datetime().strftime('%H:%M:%S')}] Booster Pack: finish opening '{booster_pack}'")
-    return
-
-
-def select_booster_packs(sct, monitor, booster_pack: str = desired_booster_packs):
-    """Select Desired Pack from Select Expansion window"""
-    series_name, booster_pack_key = find_pack_in_series(booster_pack=booster_pack)
-    if not booster_pack_key:
-        print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to find Desired Pack '{booster_pack}' in template dict")
-        click_x(sct, monitor)
-        return
-
-    if DEBUG:
-        print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Booster Pack: selecting '{series_name}': '{booster_pack}'")
-
-    click_template(sct, monitor, "pack_select_other_booster_packs_btn", confirm_click=True)
-
-    # Select Expansion window
-    select_expansion = finding_template(sct, monitor, "pack_select_expansion_window")
-    select_expansion = offset_boxes(select_expansion, y_offset=375)
-
-    click_template(sct, monitor, series_name, color_match=False)
-
-    max_scroll_attempts = 10
-    for i in range(max_scroll_attempts):
-        booster_pack_loc = check_template(sct, monitor, booster_pack_key, threshold=0.8)
-        if booster_pack_loc:
-            move_to_click(booster_pack_loc)
-            sleep(1)
-            if is_template_matched(sct, monitor, "pack_select_other_booster_packs_btn", method="find"):
-                return True
-        else:
-            # scroll down to reveal more packs
-            mouse_drag_scroll(select_expansion, y_offset=-350, duration=0.5)
-            if i > max_scroll_attempts-3:
-                sleep(0.50)
-    else:
-        print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to find Pack '{booster_pack}' in {series_name} after {max_scroll_attempts} attempts")
-        click_x(sct, monitor)
-        return
-
-
-def find_pack_in_series(booster_pack: str = desired_booster_packs):
-    """Find which series a pack belongs to and return the template key"""
-    for series_name, series_packs in BOOSTER_PACK_TO_TEMPLATES.items():
-        if booster_pack in series_packs:
-            return series_name, series_packs[booster_pack]
-    return None, None
-
-
-def open_pack(sct, monitor):
-    # while loop for multiple card packs
-    # multiple card packs is super rare occurrence (happened once as gift)
-    if not is_template_matched(sct, monitor, "pack_open_slice", method="find", max_attempts=30):
-        print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] No pack found to slices open")
-        return
-
-    for _ in range(10):
-        open_pack_slice(sct, monitor)
-        click_template_nonstop_until(sct, monitor, click_template="tap_and_hold_btn", stop_templates="next_btn", click_hold=True, click_hold_duration=2.0)
-        click_next(sct, monitor)
-        sleep(7.5)
-        if not is_template_matched(sct, monitor, "pack_open_slice"):
-            break
-
-    handle_card_collection_milestone(sct, monitor)
-    handle_card_new_dex(sct, monitor)
-
-    if is_template_matched(sct, monitor, "ok_btn"):
-        click_ok(sct, monitor)  # claim shinedust
-        sleep(1)
-    return
-
-
-def open_pack_slice(sct, monitor):
-    """Trace line to open Pack"""
-    for i in range(20):
-        open_slice = check_template(sct, monitor, "pack_open_slice", color_match=False, threshold=0.85)
-        if not open_slice:
-            return True
-
-        # Find the bounding box with the smallest x-coordinate
-        boxes = min(open_slice, key=lambda box: box[0])
-
-        boxes = offset_boxes(boxes, zero_w_h=True)
-        mouse_drag_scroll(boxes, x_offset=500, duration=0.5, drag=True)
-        sleep(0.25)
-    else:
-        print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to slice open pack")
-    return
-
-
-def handle_card_collection_milestone(sct, monitor):
-    if is_template_matched(sct, monitor, "card_milestone"):  # card collection milestone
-        click_tap_to_proceed(sct, monitor)
-        sleep(3)
-    return
-
-
-def handle_card_new_dex(sct, monitor):
-    if is_template_matched(sct, monitor, "card_new_dex"):  # if new cards, register to dex
-        for _ in range(2):
-            click_skip(sct, monitor)
-            sleep(1)
-        click_next(sct, monitor)
-        sleep(1)
-    return
-
-
-def wonder_pick_random_card(sct, monitor):
-    cards = finding_template(sct, monitor, "wonder_pick_pick_a_card_back", group_rectangles=True)
-    if len(cards) > 0:
-        if DEBUG:
-            print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Found {len(cards)} card backs to randomly choose")
-            # print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Cards are: {cards}")
-        card = random.choice(cards)
-        card_index = cards.index(card)
-        print(f"[{current_datetime().strftime('%H:%M:%S')}] Random card choice is #{card_index+1}: {card}")
-        move_to_click(card)
-        sleep(7.5)
-    else:
-        print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to find card backs to randomly pick")
-    return
-
-
-def check_if_home_screen(sct, monitor):
-    templates = ["home_missions_btn_0", "home_missions_btn_1"]
-    if is_template_matched(sct, monitor, "home_btn_1") \
-        and is_template_matched(sct, monitor, templates):
-        # and is_template_matched(sct, monitor, "home_wonder_pick_btn"):  # NOTE make it stricter?
-        return True
-    return False
-
-
-def go_to_home_screen(sct, monitor):
-    if check_if_home_screen(sct, monitor):
-        return True
-
-    templates = ["home_btn_0", "home_btn_1", "home_btn_level_up"]
-    max_attempts = 120
-    for _ in range(max_attempts):
-        for template in templates:
-            home = check_template(sct, monitor, template)
-            if home:
-                move_to_click(home)
-                for _ in range(10):
-                    if check_if_home_screen(sct, monitor):
-                        sleep(3)
-                        return True
-                    sleep(0.1)
-        sleep(0.25)
-    else:
-        print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Couldn't get to Home screen")
-        return False
-
-
-def go_to_booster_pack_screen(sct, monitor):
-    if is_template_matched(sct, monitor, "pack_select_other_booster_packs_btn"):
-        return True
-
-    go_to_home_screen(sct, monitor)
-
-    if DEBUG:
-        print(f"\n[DEBUG {current_datetime().strftime('%H:%M:%S')}] Opening Booster Pack screen")
-
-    # different approach to "home_pack" template, which gets updated constantly
-    home_pack_btn = "home_pack_expansion_btn"
-    home_pack = check_template(sct, monitor, home_pack_btn)
-    if home_pack:
-        home_pack_loc = offset_boxes(home_pack, x_offset=-200, y_offset=150)
-        while True:
-            move_to_click(home_pack_loc)
-            sleep(1)
-            if not check_template(sct, monitor, "home_wonder_pick_btn"):
-                break
-    else:
-        print(f"\n[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to find {home_pack_btn} at Home screen")
-        return False
-
-    templates = ["pack_can_open_a_booster_pack", "pack_select_other_booster_packs_btn"]
-    max_attempts = 40
-    for _ in range(max_attempts):
-        for template in templates:
-            pack_screen = check_template(sct, monitor, template)
-            if pack_screen:
-                if DEBUG and template == "pack_can_open_a_booster_pack":
-                    print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] can open a Booster Pack")
-                elif DEBUG:
-                    print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] at Booster Pack screen")
-                return True
-        sleep(0.25)
-    else:
-        print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to get to Booster Pack screen")
-        return False
-
-
-def go_to_battle_screen(sct, monitor):
-    if go_to_home_screen(sct, monitor):
-        templates = ["home_battle_btn_0", "home_battle_btn_0_dot"]
-        max_attempts = 120
-        for _ in range(max_attempts):
-            for template in templates:
-                battle = check_template(sct, monitor, template)
-                if battle:
-                    move_to_click(battle)
-                    for _ in range(10):
-                        if not is_template_matched(sct, monitor, template):
-                            sleep(3)
-                            return True
-                        sleep(0.1)
-            sleep(0.25)
-        else:
-            print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Couldn't get to Battle screen")
-            return False
-
-
-def go_to_missions_screen(sct, monitor):
-    if go_to_home_screen(sct, monitor):
-        templates = ["home_missions_btn_0", "home_missions_btn_1"]
-        max_attempts = 120
-        for _ in range(max_attempts):
-            for template in templates:
-                missions = check_template(sct, monitor, template)
-                if missions:
-                    move_to_click(missions)
-                    for _ in range(10):
-                        if not is_template_matched(sct, monitor, template):
-                            sleep(5)
-                            return True
-                        sleep(0.1)
-            sleep(0.25)
-        else:
-            print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Couldn't get to Home screen")
-            return False
 
 
 def click_next(sct, monitor, sleep_duration: float = 1.0, confirm_click: bool = True):

@@ -34,7 +34,6 @@ debug: false
 enable_check_pack_screen: true
 enable_wonder_pick: true
 enable_special_wonder_picks: true  # special Wonder Picks that uses stamina (e.g., Chansey, Rare)
-enable_check_level_up: true
 enable_exit_app: true
 
 # Battle settings

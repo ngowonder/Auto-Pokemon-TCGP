@@ -82,6 +82,10 @@ TEMPLATES = {
     "home_wonder_pick_btn": "images/home_wonder_pick_btn.png",
     "home_wonder_pick_sneak_peeks": "images/home_wonder_pick_sneak_peeks.png",
 
+    "level_up": "images/level_up.jpg",  # TODO get png
+    "level_up_unlocked": "images/level_up_unlocked.jpg",  # TODO get png
+    "news_window": "images/news_window.png",
+
     "back_arrow_btn": "images/back_arrow_btn.png",
     "next_btn": "images/next_btn.png",
     "ok_btn": "images/ok_btn.png",
@@ -89,9 +93,6 @@ TEMPLATES = {
     "tap_and_hold_btn": "images/tap_and_hold_btn.png",
     "tap_to_proceed_btn": "images/tap_to_proceed_btn.png",
     "x_close_btn": "images/x_close_btn.png",
-
-    'level_up': 'images/level_up.jpg',  # TODO get png
-    'level_up_unlocked': 'images/level_up_unlocked.jpg',  # TODO get png
 
     # Gifts
     "gifts_screen": "images/gifts_screen.png",
@@ -127,10 +128,10 @@ TEMPLATES = {
     "wonder_pick_pick_item": "images/wonder_pick_pick_item.png",
     "wonder_pick_pick_items": "images/wonder_pick_pick_items.png",
     "wonder_pick_results_screen": "images/wonder_pick_results_screen.png",
-    "wonder_pick_sneak_peek_icon": "wonder_pick_sneak_peek_icon.png",
-    "wonder_pick_sneak_peek_ok_btn": "wonder_pick_sneak_peek_ok_btn.png",
-    "wonder_pick_sneak_peek_take_a_peek_btn_0": "wonder_pick_sneak_peek_take_a_peek_btn_0.png",
-    "wonder_pick_sneak_peek_take_a_peek_btn_1": "wonder_pick_sneak_peek_take_a_peek_btn_1.png",
+    "wonder_pick_sneak_peek_icon": "images/wonder_pick_sneak_peek_icon.png",
+    "wonder_pick_sneak_peek_ok_btn": "images/wonder_pick_sneak_peek_ok_btn.png",
+    "wonder_pick_sneak_peek_take_a_peek_btn_0": "images/wonder_pick_sneak_peek_take_a_peek_btn_0.png",
+    "wonder_pick_sneak_peek_take_a_peek_btn_1": "images/wonder_pick_sneak_peek_take_a_peek_btn_1.png",
 
     # Battle
     "battle_solo_btn": "images/battle_solo_btn.png",
