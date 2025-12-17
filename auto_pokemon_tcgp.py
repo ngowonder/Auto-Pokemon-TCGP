@@ -13,7 +13,7 @@ Enable "Fix Window Size"
 
 # `desired_booster_packs` choices for config.yaml:
 "charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee", "ho-oh", "lugia", "suicune", "deluxe pack ex"
-"mega altaria", "mega blaziken", "mega gyarados"
+"mega altaria", "mega blaziken", "mega gyarados", "crimson blaze"
 """
 
 
@@ -149,10 +149,17 @@ class Bot:
         return
 
     def check_level_up(self, sct, monitor):
-        if not self.have_leveled_up:
-            if is_template_matched(sct, monitor, "home_btn_level_up"):
-                self.have_leveled_up = True
-        return
+        if self.have_leveled_up:
+            return True
+
+        if is_template_matched(sct, monitor, "home_btn_level_up"):
+            self.have_leveled_up = True
+            if DEBUG:
+                print(f"\n[DEBUG {current_datetime().strftime('%H:%M:%S')}] Level Up available")
+            return True
+
+        self.have_leveled_up = False
+        return False
 
     def handle_level_up(self, sct, monitor):
         if self.have_leveled_up:
@@ -238,6 +245,7 @@ class Bot:
             if self.check_if_home_screen(sct, monitor):
                 if DEBUG:
                     print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Started at Home screen")
+                sleep(3)
                 self.check_gifts(sct, monitor)
                 self.check_shop(sct, monitor)
                 self.check_missions(sct, monitor)
@@ -275,7 +283,7 @@ class Bot:
                     move_to_click(home)
                     for _ in range(10):
                         if self.check_if_home_screen(sct, monitor):
-                            sleep(5)
+                            sleep(3)
                             if self.have_leveled_up:
                                 self.handle_level_up(sct, monitor)
                             return True
@@ -778,7 +786,7 @@ class Bot:
             if DEBUG:
                 print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Handling Missions complete loop")
             move_to_click(complete_all)
-            sleep(4.5)
+            sleep(5)
 
             for i in range(5):
                 complete_all = check_template(sct, monitor, "missions_complete_all_btn", color_match=True)
@@ -789,7 +797,7 @@ class Bot:
                 ok_btn = check_template(sct, monitor, "ok_btn")
                 if ok_btn:
                     move_to_click(ok_btn)
-                    sleep(4.5)
+                    sleep(5)
 
                 if i > 3 and not is_template_matched(sct, monitor, "missions_complete_all_btn", color_match=True):
                     return True
@@ -820,10 +828,13 @@ class Bot:
                 move_to_click(big_complete)
                 sleep(1)
                 for _ in range(2):
+                    """
                     ok_btn = check_template(sct, monitor, "ok_btn")
                     if ok_btn:
                         move_to_click(ok_btn)
                     sleep(3)
+                    """
+                    click_ok(sct, monitor, sleep_duration=3)
                 sleep(4)
 
             """
@@ -1314,8 +1325,21 @@ def launch_game():
         except Exception as e:
             print(f"An error occurred: {e}")
     else:
-        print(f"[{current_datetime().strftime('%H:%M:%S')}] BlueStacks is running")
-        win32gui.SetForegroundWindow(HWND)
+        max_attempts = 5
+        for i in range(max_attempts):
+            try:
+                win32gui.SetForegroundWindow(HWND)
+
+                # Check if the window is actually the foreground window
+                current_foreground = win32gui.GetForegroundWindow()
+                if current_foreground == HWND:
+                    print(f"[{current_datetime().strftime('%H:%M:%S')}] BlueStacks is running")
+                    break  # Success, exit the loop
+            except Exception as e:
+                if i == max_attempts-1:  # Last iteration
+                    print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed setting foreground window: {e}. Exiting Auto Pokemon TCGP")
+                    sys.exit
+            sleep(1)
 
 
 def restart_script():
