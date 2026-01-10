@@ -371,7 +371,7 @@ class Bot:
                         found_package = True
                     break
 
-        click_template(sct, monitor, "pack_open_btn")
+        click_template(sct, monitor, "pack_open_btn", confirm_click=True)
         click_skip(sct, monitor)
         self.open_pack(sct, monitor)
 
@@ -445,6 +445,28 @@ class Bot:
             sleep(1)
         return
 
+    # alt version
+    def open_pack_slice(self, sct, monitor):
+        """Trace line to open Pack"""
+        stop_templates = ["tap_and_hold_btn", "next_btn"]
+        for i in range(60):
+            if is_template_matched(sct, monitor, stop_templates):
+                return True
+
+            open_slice = check_template(sct, monitor, "pack_open_slice", color_match=False, threshold=0.85)
+            if open_slice:
+
+                # Find the bounding box with the smallest x-coordinate
+                boxes = min(open_slice, key=lambda box: box[0])
+
+                boxes = offset_boxes(boxes, zero_w_h=True)
+                mouse_drag_scroll(boxes, x_offset=500, duration=0.5, drag=True)
+            sleep(0.25)
+        else:
+            print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to slice open pack")
+        return
+
+    '''
     def open_pack_slice(self, sct, monitor):
         """Trace line to open Pack"""
         for i in range(20):
@@ -461,6 +483,7 @@ class Bot:
         else:
             print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to slice open pack")
         return
+    '''
 
     def handle_card_collection_milestone(self, sct, monitor):
         if is_template_matched(sct, monitor, "card_milestone"):  # card collection milestone
@@ -786,13 +809,13 @@ class Bot:
             if DEBUG:
                 print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Handling Missions complete loop")
             move_to_click(complete_all)
-            sleep(5)
+            sleep(6.5)
 
             for i in range(5):
                 complete_all = check_template(sct, monitor, "missions_complete_all_btn", color_match=True)
                 if complete_all:
                     move_to_click(complete_all)
-                    sleep(3)
+                    sleep(5)
 
                 ok_btn = check_template(sct, monitor, "ok_btn")
                 if ok_btn:
@@ -821,31 +844,24 @@ class Bot:
             if DEBUG:
                 print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Handling Missions complete loop")
             move_to_click(small_complete)
-            sleep(2)
+            sleep(3)
 
             big_complete = check_template(sct, monitor, "missions_big_complete_btn")
             if big_complete:
                 move_to_click(big_complete)
-                sleep(1)
+                sleep(3)
                 for _ in range(2):
-                    """
+
+                    # we use two check_template over click_ok for missions_themed_collections()
                     ok_btn = check_template(sct, monitor, "ok_btn")
                     if ok_btn:
                         move_to_click(ok_btn)
-                    sleep(3)
-                    """
-                    click_ok(sct, monitor, sleep_duration=3)
-                sleep(4)
+                        sleep(5)
 
-            """
+            # if x_btn, then it could mean we're at missions screen, assuming no new unique complete_loop
             x_btn = check_template(sct, monitor, "x_close_btn")
             if x_btn:
-                move_to_click(x_btn)
-                sleep(1)
-                # if not self.missions_handle_expansions(sct, monitor):
-                    # return
                 return
-            """
 
             if self.check_if_home_screen(sct, monitor):
                 return
