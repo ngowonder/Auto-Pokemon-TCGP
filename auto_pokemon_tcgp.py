@@ -684,6 +684,7 @@ class Bot:
                         found_ok_btn = True
                         if ok_btn == "wonder_pick_sneak_peek_ok_btn":
                             self.wonder_pick_sneak_peeks_available = True
+                        sleep(0.25)
                         move_to_click(matched_ok_btn)
                         break
                     if i < 60 - 1:
