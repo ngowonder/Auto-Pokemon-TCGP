@@ -691,7 +691,7 @@ class Bot:
                         sleep(0.25)
 
             print(f"[{current_datetime().strftime('%H:%M:%S')}] Wonder Pick: '{pick}'")
-            click_skip(sct, monitor)
+            click_skip(sct, monitor, confirm_click=True)
 
             if self.wonder_pick_sneak_peeks_available:
                 self.handle_wonder_pick_sneak_peeks(sct, monitor)
@@ -899,7 +899,7 @@ class Bot:
 
         print(f"[{current_datetime().strftime('%H:%M:%S')}] Missions: Themed Collections")
         move_to_click(themed_collection)
-        sleep(1)
+        sleep(3)
 
         self.missions_handle_complete_loop(sct, monitor)
 

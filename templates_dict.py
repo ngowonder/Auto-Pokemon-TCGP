@@ -15,12 +15,13 @@ BOOSTER_PACK_TO_TEMPLATES = {
         "ho-oh": "booster_pack_ho-oh",
         "lugia": "booster_pack_lugia",
         "suicune": "booster_pack_suicune",
-        # "deluxe pack ex": "booster_pack_deluxe_pack_ex",  # no longer available
+        "deluxe pack ex": "booster_pack_deluxe_pack_ex",  # limited-time
     },
     "booster_pack_series_b": {
         "mega altaria": "booster_pack_mega_altaria",
         "mega blaziken": "booster_pack_mega_blaziken",
         "mega gyarados": "booster_pack_mega_gyarados",
+        "crimson blaze": "booster_pack_crimson_blaze",
     }
 }
 
@@ -41,12 +42,13 @@ TEMPLATES = {
     "booster_pack_ho-oh": "images/booster_pack_ho-oh.png",
     "booster_pack_lugia": "images/booster_pack_lugia.png",
     "booster_pack_suicune": "images/booster_pack_suicune.png",
-    # "booster_pack_deluxe_pack_ex": "images/booster_pack_deluxe_pack_ex.png",  # no longer available
+    "booster_pack_deluxe_pack_ex": "images/booster_pack_deluxe_pack_ex.png",  # limited-time
 
     "booster_pack_series_b": "images/booster_pack_series_b.png",
     "booster_pack_mega_altaria": "images/booster_pack_mega_altaria.png",
     "booster_pack_mega_blaziken": "images/booster_pack_mega_blaziken.png",
     "booster_pack_mega_gyarados": "images/booster_pack_mega_gyarados.png",
+    "booster_pack_crimson_blaze": "images/booster_pack_crimson_blaze.png",
 
     "card_milestone": "images/card_milestone.png",
     "card_new_dex": "images/card_new_dex.png",
