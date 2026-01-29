@@ -207,7 +207,7 @@ class Bot:
             click_ok(sct, monitor)
             sleep(17.5)
 
-            max_attempts = 120
+            max_attempts = 150
             for _ in range(max_attempts):
                 if is_template_matched(sct, monitor, "start_screen") or self.go_to_home_screen(sct, monitor):
                     print(f"[{current_datetime().strftime('%H:%M:%S')}] new Pokemon TCGP data downloaded")
@@ -869,7 +869,13 @@ class Bot:
             sleep(1)
 
     def missions_handle_expansions(self, sct, monitor):
-        expansion_btn = check_template(sct, monitor, "missions_expansions_btn")
+        templates = ["missions_expansions_btn", ]  # "missions_expansions_view_more_btn" to be added
+        expansion_btn = None
+        for template in templates:
+            expansion_btn = check_template(sct, monitor, template, color_match=True)
+            if expansion_btn:
+                break
+
         if expansion_btn:
             move_to_click(expansion_btn)
             sleep(1)

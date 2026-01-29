@@ -5,7 +5,7 @@
 
 # Configuration for the desired_booster_packs selection
 ##  Flow-style lists (uncomment this list and comment the other to use)
-# desired_booster_packs: ["charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee", "ho-oh", "lugia", "suicune", "deluxe pack ex", "mega altaria", "mega blaziken", "mega gyarados"]
+# desired_booster_packs: ["charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee", "ho-oh", "lugia", "suicune", "deluxe pack ex", "mega altaria", "mega blaziken", "mega gyarados", "crimson blaze", "fantastical parade"]
 
 ## Block-style list (items must be indented and each item must begin with a hyphen)
 desired_booster_packs:
@@ -24,10 +24,12 @@ desired_booster_packs:
     # - "ho-oh"
     # - "lugia"
     # - "suicune"
-    # - "deluxe pack ex"  # NOTE # no longer available
-    - mega altaria
-    - mega blaziken
-    - mega gyarados
+    # - "deluxe pack ex"  # limited-time
+    # - mega altaria
+    # - mega blaziken
+    # - mega gyarados
+    # - crimson blaze
+    - fantastical parade
 
 # Control flags for various features
 debug: false

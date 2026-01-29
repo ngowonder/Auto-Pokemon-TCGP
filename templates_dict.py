@@ -22,6 +22,7 @@ BOOSTER_PACK_TO_TEMPLATES = {
         "mega blaziken": "booster_pack_mega_blaziken",
         "mega gyarados": "booster_pack_mega_gyarados",
         "crimson blaze": "booster_pack_crimson_blaze",
+        "fantastical parade": "booster_pack_fantastical_parade",
     }
 }
 
@@ -49,6 +50,7 @@ TEMPLATES = {
     "booster_pack_mega_blaziken": "images/booster_pack_mega_blaziken.png",
     "booster_pack_mega_gyarados": "images/booster_pack_mega_gyarados.png",
     "booster_pack_crimson_blaze": "images/booster_pack_crimson_blaze.png",
+    "booster_pack_fantastical_parade": "images/booster_pack_fantastical_parade.png",
 
     "card_milestone": "images/card_milestone.png",
     "card_new_dex": "images/card_new_dex.png",
@@ -109,6 +111,7 @@ TEMPLATES = {
     "missions_big_complete_btn": "images/missions_big_complete_btn.png",
     "missions_small_complete_btn": "images/missions_small_complete_btn.png",
     "missions_expansions_btn": "images/missions_expansions_btn.png",
+    # "missions_expansions_view_more_btn": "images/missions_expansions_view_more_btn.png",  # 1/29/26 updated expansions_btn
     "missions_expansions_reward_icon": "images/missions_expansions_reward_icon.png",
     "missions_expansions_missions_window": "images/missions_expansions_missions_window.png",
     "missions_expansions_themed_collections_window": "images/missions_expansions_themed_collections_window.png",
