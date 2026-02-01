@@ -111,7 +111,7 @@ TEMPLATES = {
     "missions_big_complete_btn": "images/missions_big_complete_btn.png",
     "missions_small_complete_btn": "images/missions_small_complete_btn.png",
     "missions_expansions_btn": "images/missions_expansions_btn.png",
-    # "missions_expansions_view_more_btn": "images/missions_expansions_view_more_btn.png",  # 1/29/26 updated expansions_btn
+    "missions_expansions_view_more_btn": "images/missions_expansions_view_more_btn.png",  # 1/29/26 updated expansions_btn
     "missions_expansions_reward_icon": "images/missions_expansions_reward_icon.png",
     "missions_expansions_missions_window": "images/missions_expansions_missions_window.png",
     "missions_expansions_themed_collections_window": "images/missions_expansions_themed_collections_window.png",

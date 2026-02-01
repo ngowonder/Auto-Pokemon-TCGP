@@ -772,7 +772,7 @@ class Bot:
 
         while True:
             self.missions_handle_complete_all_loop(sct, monitor)
-            self.missions_handle_complete_loop(sct, monitor)  # NOTE if not is_template_matched(sct, monitor, "missions_complete_all_btn")
+            self.missions_handle_complete_loop(sct, monitor)
 
             if not self.missions_horizontal_scroll(sct, monitor):
                 break
@@ -823,6 +823,21 @@ class Bot:
                     move_to_click(ok_btn)
                     sleep(5)
 
+                # new type of missions reward: single cards
+                if is_template_matched(sct, monitor, "tap_to_proceed_btn"):
+                    break_templates = ["card_new_dex", "ok_btn"]
+                    while True:
+                        click_tap_to_proceed() # single card reward
+                        if is_template_matched(sct, monitor, break_templates):
+                            break
+                        sleep(1)
+                    self.handle_card_new_dex()
+                    for _ in range(2):
+                        ok_btn = check_template(sct, monitor, "ok_btn")
+                        if ok_btn:
+                            move_to_click(ok_btn)
+                            sleep(3)
+
                 if i > 3 and not is_template_matched(sct, monitor, "missions_complete_all_btn", color_match=True):
                     return True
 
@@ -869,7 +884,7 @@ class Bot:
             sleep(1)
 
     def missions_handle_expansions(self, sct, monitor):
-        templates = ["missions_expansions_btn", ]  # "missions_expansions_view_more_btn" to be added
+        templates = ["missions_expansions_btn", "missions_expansions_view_more_btn"]
         expansion_btn = None
         for template in templates:
             expansion_btn = check_template(sct, monitor, template, color_match=True)
