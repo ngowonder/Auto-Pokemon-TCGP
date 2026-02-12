@@ -1165,11 +1165,21 @@ class Bot:
                 if rewards:
                     move_to_click(rewards)
                     sleep(1)
-                click_next(sct, monitor)
-                back = check_template(sct, monitor, "battle_end_defeat_back_btn")  # randomly appear: shows recommended deck to play
-                if back:
-                    move_to_click(back)
-                    sleep(1)
+                click_next(sct, monitor, sleep_duration=2.0)
+
+                # "type/deck is recommended" window
+                templates = ["battle_end_defeat_deck_recommended_window_0", "battle_end_defeat_deck_recommended_window_1"]
+                for template in templates:
+                    deck_recommended_window = check_template(sct, monitor, template)
+                    if deck_recommended_window:
+                        back_btn = check_template(sct, monitor, "battle_end_defeat_back_btn")  # Old; for deck recommended window
+                        if back_btn:
+                            move_to_click(back_btn)
+                        x_btn = check_template(sct, monitor, "x_close_btn")
+                        if x_btn:
+                            move_to_click(x_btn)
+                        sleep(1)
+
                 return False  # defeat
 
             if is_template_matched(sct, monitor, "battle_end_victory"):

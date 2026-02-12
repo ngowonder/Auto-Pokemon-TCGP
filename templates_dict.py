@@ -155,7 +155,9 @@ TEMPLATES = {
     "battle_rules_auto_btn": "images/battle_rules_auto_btn.png",
     "battle_rules_battle_btn": "images/battle_rules_battle_btn.png",
     "battle_end_defeat": "images/battle_end_defeat.png",
-    "battle_end_defeat_back_btn": "images/battle_end_defeat_back_btn.jpg",  # TODO get png
+    "battle_end_defeat_deck_recommended_window_0": "images/battle_end_defeat_deck_recommended_window_0.png",  # Old
+    "battle_end_defeat_deck_recommended_window_1": "images/battle_end_defeat_deck_recommended_window_1.png",
+    "battle_end_defeat_back_btn": "images/battle_end_defeat_back_btn.png",  # Old; for deck recommended window
     "battle_end_victory": "images/battle_end_victory.png",
     "battle_end_victory_tap_to_proceed_btn": "images/battle_end_victory_tap_to_proceed_btn.png",
     "battle_end_victory_new_battle_unlocked": "images/battle_end_victory_new_battle_unlocked.png",
