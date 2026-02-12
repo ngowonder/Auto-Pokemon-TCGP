@@ -968,7 +968,7 @@ class Bot:
 
         battle_count = 0
         while True:
-            if is_template_matched(sct, monitor, "battle_solo_event_drop_event_screen", method="find"):
+            if is_template_matched(sct, monitor, "battle_solo_drop_event_screen", method="find"):
                 sleep(1)
                 if not is_template_matched(sct, monitor, "battle_solo_event_stamina"):
                     print(f"[{current_datetime().strftime('%H:%M:%S')}] Battle: Solo Event: no stamina available")
@@ -1001,24 +1001,34 @@ class Bot:
     def go_to_battle_solo_event(self, sct, monitor):
         max_attempts = 15
         for _ in range(max_attempts):
-            if is_template_matched(sct, monitor, "battle_solo_btn"):
+            if is_template_matched(sct, monitor, "battle_solo_btn_0"):
                 if DEBUG:
                     print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Battle: Solo Event not available")
                 sleep(1)
                 return False
 
-            templates = ["battle_solo_event_btn_0",]  # "battle_solo_event_btn_1"
+            # Battle screen
+            templates = ["battle_solo_btn_1",]  # "battle_solo_btn_2"
             for template in templates:
-                solo_event = check_template(sct, monitor, template)
-                if solo_event:
+                solo_btn = check_template(sct, monitor, template)
+                if solo_btn:
                     print(f"[{current_datetime().strftime('%H:%M:%S')}] Battle: Solo Event available")
-                    move_to_click(solo_event)
+                    move_to_click(solo_btn)
 
-                    # After clicking the solo event, check for drop event immediately
-                    drop_event = finding_template(sct, monitor, "battle_solo_event_drop_event_btn")
-                    if drop_event:
-                        move_to_click(drop_event)
-                        return True
+                    # Battle Solo screen
+                    if not is_template_matched(sct, monitor, "battle_solo_screen", method="find"):
+                        print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to find Battle Solo screen")
+                        return False
+
+                    # Check for Drop Event btn or Event btn
+                    templates = ["battle_solo_drop_event_btn", "battle_solo_event_btn"]
+                    for _ in range(20):
+                        for template in templates:
+                            event_btn = check_template(sct, monitor, template)
+                            if event_btn:
+                                move_to_click(event_btn)
+                                return True
+                        sleep(0.25)
                     else:
                         print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to find Drop Event")
                         return False

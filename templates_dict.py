@@ -139,11 +139,13 @@ TEMPLATES = {
     "wonder_pick_sneak_peek_take_a_peek_btn_1": "images/wonder_pick_sneak_peek_take_a_peek_btn_1.png",
 
     # Battle
-    "battle_solo_btn": "images/battle_solo_btn.png",
-    "battle_solo_event_btn_0": "images/battle_solo_event_btn_0.png",  # "Event underway!"
-    # "battle_solo_event_btn_1": "images/battle_solo_event_btn_1.png",  # NOTE do i need the "Ending soon"?
-    "battle_solo_event_drop_event_btn": "images/battle_solo_event_drop_event_btn.png",
-    "battle_solo_event_drop_event_screen": "images/battle_solo_event_drop_event_screen.png",
+    "battle_solo_btn_0": "images/battle_solo_btn_0.png",
+    "battle_solo_btn_1": "images/battle_solo_btn_1.png",  # "Event underway!"
+    # "battle_solo_btn_2": "images/battle_solo_btn_2.png",  # NOTE do i need the "Ending soon"?
+    "battle_solo_screen": "images/battle_solo_screen.png",
+    "battle_solo_drop_event_btn": "images/battle_solo_drop_event_btn.png",  # old
+    "battle_solo_event_btn": "images/battle_solo_event_btn.png",  # new 2026/2/12
+    "battle_solo_drop_event_screen": "images/battle_solo_drop_event_screen.png",
     "battle_solo_event_stamina": "images/battle_solo_event_stamina.png",
     "battle_diff_beginner": "images/battle_solo_diff_beginner.png",
     "battle_diff_intermediate": "images/battle_solo_diff_intermediate.png",
