@@ -144,15 +144,18 @@ class Bot:
             return False
 
     def check_news(self, sct, monitor):
-        if is_template_matched(sct, monitor, "news_window"):
-            click_x(sct, monitor)
+        for _ in range(12):
+            if is_template_matched(sct, monitor, "news_window"):
+                print(f"[{current_datetime().strftime('%H:%M:%S')}] Fresh news window; closing.")
+                click_x(sct, monitor)
+        sleep(0.25)
         return
 
     def check_level_up(self, sct, monitor):
         if self.have_leveled_up:
             return True
 
-        if is_template_matched(sct, monitor, "home_btn_level_up"):
+        if is_template_matched(sct, monitor, "home_btn_level_up", color_match=True):
             self.have_leveled_up = True
             if DEBUG:
                 print(f"\n[DEBUG {current_datetime().strftime('%H:%M:%S')}] Level Up available")
@@ -221,6 +224,26 @@ class Bot:
                     print(f"[{current_datetime().strftime('%H:%M:%S')}] Quitting Auto Pokemon TCGP")
                     sys.exit()
 
+    def new_privacy_update(self, sct, monitor):
+        if is_template_matched(sct, monitor, "pokemon_tcgp_update_privacy_notice"):
+            print(f"[{current_datetime().strftime('%H:%M:%S')}] new Privacy update")
+            click_ok(sct, monitor)
+            click_template(sct, monitor, "pokemon_tcgp_update_privacy_notice_btn")
+            click_x(sct, monitor)
+            if is_template_matched(sct, monitor, "pokemon_tcgp_update_checked_agree_to", method="find"):
+                click_ok(sct, monitor)
+        return
+
+    def new_terms_of_use_update(self, sct, monitor):
+        if is_template_matched(sct, monitor, "pokemon_tcgp_update_terms_of_use"):
+            print(f"[{current_datetime().strftime('%H:%M:%S')}] new Terms of Use update")
+            click_ok(sct, monitor)
+            click_template(sct, monitor, "pokemon_tcgp_update_terms_of_use_btn")
+            click_x(sct, monitor)
+            if is_template_matched(sct, monitor, "pokemon_tcgp_update_checked_agree_to", method="find"):
+                click_ok(sct, monitor)
+        return
+
     def start_game(self, sct, monitor):
         max_attempts = 360
         for _ in range(max_attempts):
@@ -230,8 +253,11 @@ class Bot:
                 move_to_click(start)
                 sleep(5)
 
+            bluestacks_enter_pokemon_tcgp(sct, monitor)
             self.new_app_update(sct, monitor)
             self.new_data_update(sct, monitor)
+            self.new_privacy_update(sct, monitor)
+            self.new_terms_of_use_update(sct, monitor)
 
             # Go to Home screen if start elsewhere in-game
             if is_template_matched(sct, monitor, "home_btn_0") \
@@ -590,7 +616,9 @@ class Bot:
                         move_to_click(i)
                         sleep(1.5)
 
-                        check_template(sct, monitor, "shop_item_max_qty_btn")
+                        max_qty_btn = check_template(sct, monitor, "shop_item_max_qty_btn")
+                        if max_qty_btn:
+                            move_to_click(max_qty_btn)
 
                         if is_template_matched(sct, monitor, "shop_item_max_qty_btn"):
                             click_template(sct, monitor, "shop_item_max_qty_btn")
@@ -839,12 +867,28 @@ class Bot:
                             sleep(3)
 
                 if i > 3 and not is_template_matched(sct, monitor, "missions_complete_all_btn", color_match=True):
+                    if DEBUG:
+                        print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Finished Missions complete all loop")
                     return True
 
+                """
                 if is_template_matched(sct, monitor, "missions_claimed_all_rewards_screen"):
+                    if DEBUG:
+                        print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Finished Missions complete all loop")
                     return True
+                """
 
-                sleep(0.25)
+                # if x_btn, then it could mean we're at missions screen, assuming no new unique complete_loop
+                if is_template_matched(sct, monitor, "x_close_btn"):
+                    if DEBUG:
+                        print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Finished Missions complete all loop")
+                    return
+
+                if self.check_if_home_screen(sct, monitor):
+                    print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Unexpectedly at Home screen")
+                    return False
+
+                sleep(1)
         return False
 
     def missions_handle_complete_loop(self, sct, monitor):
@@ -875,12 +919,14 @@ class Bot:
                         sleep(5)
 
             # if x_btn, then it could mean we're at missions screen, assuming no new unique complete_loop
-            x_btn = check_template(sct, monitor, "x_close_btn")
-            if x_btn:
+            if is_template_matched(sct, monitor, "x_close_btn"):
+                if DEBUG:
+                    print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Finished Missions complete loop")
                 return
 
             if self.check_if_home_screen(sct, monitor):
-                return
+                print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Unexpectedly at Home screen")
+                return False
             sleep(1)
 
     def missions_handle_expansions(self, sct, monitor):
@@ -1151,8 +1197,11 @@ class Bot:
             sleep(0.5)
 
         while True:
-            if is_template_matched(sct, monitor, "battle_end_defeat"):
-                print(f"[{current_datetime().strftime('%H:%M:%S')}] Battle ended in Defeat")
+            if is_template_matched(sct, monitor, "battle_end_defeat") or is_template_matched(sct, monitor, "battle_end_tie"):
+                if is_template_matched(sct, monitor, "battle_end_defeat"):
+                    print(f"[{current_datetime().strftime('%H:%M:%S')}] Battle ended in Defeat")
+                elif is_template_matched(sct, monitor, "battle_end_ie"):
+                    print(f"[{current_datetime().strftime('%H:%M:%S')}] Battle ended in Tie")
                 for _ in range(2):
                     click_tap_to_proceed(sct, monitor, sleep_duration=1.5)
 
@@ -1180,7 +1229,7 @@ class Bot:
                             move_to_click(x_btn)
                         sleep(1)
 
-                return False  # defeat
+                return False  # defeat/tie
 
             if is_template_matched(sct, monitor, "battle_end_victory"):
                 print(f"[{current_datetime().strftime('%H:%M:%S')}] Battle ended in Victory")
@@ -1407,6 +1456,15 @@ def restart_script():
     subprocess.run([python, script] + sys.argv[1:])  # run new py
     sys.exit()  # exit old py
 
+
+def bluestacks_enter_pokemon_tcgp(sct, monitor):
+    """Enter Pokemon TCGP from BlueStacks homescreen"""
+    pokemon_tcgp_icon = check_template(sct, monitor, "bluestacks_pokemon_tcgp_icon")
+    if pokemon_tcgp_icon:
+        if DEBUG:
+            print(f"[{current_datetime().strftime('%H:%M:%S')}] Entering Pokemon TCGP from BlueStacks homescreen")
+        move_to_click(pokemon_tcgp_icon)
+    return
 
 def exit_bluestacks(sct, monitor):
     win32gui.SetForegroundWindow(HWND)

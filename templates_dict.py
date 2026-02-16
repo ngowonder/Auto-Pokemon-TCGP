@@ -66,6 +66,11 @@ TEMPLATES = {
     "start_screen": "images/start_screen.png",
     "pokemon_tcgp_update_app": "images/pokemon_tcgp_update_app.png",
     "pokemon_tcgp_update_data": "images/pokemon_tcgp_update_data.jpg",  # TODO get png
+    "pokemon_tcgp_update_privacy_notice": "images/pokemon_tcgp_update_privacy_notice.png",
+    "pokemon_tcgp_update_privacy_notice_btn": "images/pokemon_tcgp_update_privacy_notice_btn.png",
+    "pokemon_tcgp_update_terms_of_use": "images/pokemon_tcgp_update_terms_of_use.png",
+    "pokemon_tcgp_update_terms_of_use_btn": "images/pokemon_tcgp_update_terms_of_use_btn.png",
+    "pokemon_tcgp_update_checked_agree_to": "images/pokemon_tcgp_update_checked_agree_to.png",
     "pokemon_tcgp_go_to_store_btn": "images/pokemon_tcgp_go_to_store_btn.png",
     "google_play_screen": "images/google_play_screen.png",
     "google_play_update_btn": "images/google_play_update_btn.png",
@@ -158,10 +163,12 @@ TEMPLATES = {
     "battle_end_defeat_deck_recommended_window_0": "images/battle_end_defeat_deck_recommended_window_0.png",  # Old
     "battle_end_defeat_deck_recommended_window_1": "images/battle_end_defeat_deck_recommended_window_1.png",
     "battle_end_defeat_back_btn": "images/battle_end_defeat_back_btn.png",  # Old; for deck recommended window
+    "battle_end_tie": "images/battle_end_tie.png",
     "battle_end_victory": "images/battle_end_victory.png",
     "battle_end_victory_tap_to_proceed_btn": "images/battle_end_victory_tap_to_proceed_btn.png",
     "battle_end_victory_new_battle_unlocked": "images/battle_end_victory_new_battle_unlocked.png",
 
+    "bluestacks_pokemon_tcgp_icon": "images/bluestacks_pokemon_tcgp_icon.png",
     "bluestacks_close_btn": "images/bluestacks_close_btn.png",
     "bluestacks_x_btn": "images/bluestacks_x_btn.png",
 
