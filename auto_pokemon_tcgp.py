@@ -129,7 +129,7 @@ class Bot:
 
         max_attempts = 120
         for _ in range(max_attempts):
-            if is_template_matched(sct, monitor, "home_missions_btn_0"):
+            if is_template_matched(sct, monitor, ["home_missions_btn_0", "home_missions_btn_0_mark"]):
                 # self.missions_rewards_available = False
                 return False
 
@@ -288,7 +288,7 @@ class Bot:
             return
 
     def check_if_home_screen(self, sct, monitor):
-        templates = ["home_missions_btn_0", "home_missions_btn_1"]
+        templates = ["home_missions_btn_0", "home_missions_btn_0_mark", "home_missions_btn_1"]
         if is_template_matched(sct, monitor, "home_btn_1") \
             and is_template_matched(sct, monitor, templates):
             return True
@@ -771,7 +771,7 @@ class Bot:
 
     def go_to_missions_screen(self, sct, monitor):
         if self.go_to_home_screen(sct, monitor):
-            templates = ["home_missions_btn_0", "home_missions_btn_1"]
+            templates = ["home_missions_btn_0", "home_missions_btn_0_mark", "home_missions_btn_1"]
             max_attempts = 120
             for _ in range(max_attempts):
                 for template in templates:

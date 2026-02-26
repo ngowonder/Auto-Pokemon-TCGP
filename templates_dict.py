@@ -88,6 +88,7 @@ TEMPLATES = {
     "home_pack_expansion_btn": "images/home_pack_expansion_btn.png",
     "home_gifts_btn": "images/home_gifts_btn.png",
     "home_missions_btn_0": "images/home_missions_btn_0.png",
+    "home_missions_btn_0_mark": "images/home_missions_btn_0_mark.png",
     "home_missions_btn_1": "images/home_missions_btn_1.png",
     "home_shop_btn": "images/home_shop_btn.png",
     "home_wonder_pick_btn": "images/home_wonder_pick_btn.png",
