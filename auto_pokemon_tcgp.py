@@ -13,7 +13,7 @@ Enable "Fix Window Size"
 
 # `desired_booster_packs` choices for config.yaml:
 "charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee", "ho-oh", "lugia", "suicune", "deluxe pack ex"
-"mega altaria", "mega blaziken", "mega gyarados", "crimson blaze"
+"mega altaria", "mega blaziken", "mega gyarados", "crimson blaze", "fantastical parade", "paldean wonders"
 """
 
 
@@ -834,77 +834,72 @@ class Bot:
     def missions_handle_complete_all_loop(self, sct, monitor):
         """handle dex missions, bonus week, etc"""
         complete_all = check_template(sct, monitor, "missions_complete_all_btn", color_match=True)
-        if complete_all:
-            if DEBUG:
-                print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Handling Missions complete loop")
-            move_to_click(complete_all)
-            sleep(6.5)
+        if not complete_all:
+            return False
 
-            for i in range(5):
-                complete_all = check_template(sct, monitor, "missions_complete_all_btn", color_match=True)
-                if complete_all:
-                    move_to_click(complete_all)
-                    sleep(5)
+        if DEBUG:
+            print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Handling Missions complete loop")
+        move_to_click(complete_all)
+        sleep(6.5)
 
-                ok_btn = check_template(sct, monitor, "ok_btn")
-                if ok_btn:
-                    move_to_click(ok_btn)
-                    sleep(5)
+        for _ in range(5):
+            complete_all = check_template(sct, monitor, "missions_complete_all_btn", color_match=True)
+            if complete_all:
+                move_to_click(complete_all)
+                sleep(5)
 
-                # new type of missions reward: single cards
-                if is_template_matched(sct, monitor, "tap_to_proceed_btn"):
-                    break_templates = ["card_new_dex", "ok_btn"]
-                    while True:
-                        click_tap_to_proceed() # single card reward
-                        if is_template_matched(sct, monitor, break_templates):
-                            break
-                        sleep(1)
-                    self.handle_card_new_dex()
-                    for _ in range(2):
-                        ok_btn = check_template(sct, monitor, "ok_btn")
-                        if ok_btn:
-                            move_to_click(ok_btn)
-                            sleep(3)
+            ok_btn = check_template(sct, monitor, "ok_btn")
+            if ok_btn:
+                move_to_click(ok_btn)
+                sleep(5)
 
-                if i > 3 and not is_template_matched(sct, monitor, "missions_complete_all_btn", color_match=True):
-                    if DEBUG:
-                        print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Finished Missions complete all loop")
-                    return True
+            # new type of missions reward: single cards
+            if is_template_matched(sct, monitor, "tap_to_proceed_btn"):
+                break_templates = ["card_new_dex", "ok_btn"]
+                while True:
+                    click_tap_to_proceed() # single card reward
+                    if is_template_matched(sct, monitor, break_templates):
+                        break
+                    sleep(1)
+                self.handle_card_new_dex()
+                for _ in range(2):
+                    ok_btn = check_template(sct, monitor, "ok_btn")
+                    if ok_btn:
+                        move_to_click(ok_btn)
+                        sleep(3)
 
-                """
-                if is_template_matched(sct, monitor, "missions_claimed_all_rewards_screen"):
-                    if DEBUG:
-                        print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Finished Missions complete all loop")
-                    return True
-                """
+            # make sure we're at the missions screen with x_close_btn
+            if is_template_matched(sct, monitor, "x_close_btn") \
+            and not is_template_matched(sct, monitor, "missions_complete_all_btn", color_match=True):
+                if DEBUG:
+                    print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Finished Missions complete all loop")
+                return True
 
-                # if x_btn, then it could mean we're at missions screen, assuming no new unique complete_loop
-                if is_template_matched(sct, monitor, "x_close_btn"):
-                    if DEBUG:
-                        print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Finished Missions complete all loop")
-                    return
+            if self.check_if_home_screen(sct, monitor):
+                print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Unexpectedly at Home screen")
+                return False
 
-                if self.check_if_home_screen(sct, monitor):
-                    print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Unexpectedly at Home screen")
-                    return False
-
-                sleep(1)
-        return False
+            sleep(1)
 
     def missions_handle_complete_loop(self, sct, monitor):
         """handle deck missions, themed_collections"""
+        small_complete = check_template(sct, monitor, "missions_small_complete_btn", color_match=True, color_space="bgr")
+        if not small_complete:
+            return
+
+        if DEBUG:
+            print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Handling Missions complete loop")
+        move_to_click(small_complete)
+        sleep(3)
+
+        exit_templates = ["x_close_btn", "back_arrow_btn"]
+
         while True:
             # small complete btn - shadows in background can make btn slightly darker
             small_complete = check_template(sct, monitor, "missions_small_complete_btn", color_match=True, color_space="bgr")
-            if not small_complete:
-                if self.missions_handle_expansions(sct, monitor):
-                    continue
-                return
-
-            if DEBUG:
-                print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Handling Missions complete loop")
-            move_to_click(small_complete)
-            sleep(3)
+            if small_complete:
+                move_to_click(small_complete)
+                sleep(3)
 
             big_complete = check_template(sct, monitor, "missions_big_complete_btn")
             if big_complete:
@@ -918,8 +913,19 @@ class Bot:
                         move_to_click(ok_btn)
                         sleep(5)
 
-            # if x_btn, then it could mean we're at missions screen, assuming no new unique complete_loop
-            if is_template_matched(sct, monitor, "x_close_btn"):
+                # make sure we're at the missions screen before continuing
+                for _ in range(60):
+                    # x_close_btn for usual complete loop, back_arrow_btn for themed_collection
+                    if is_template_matched(sct, monitor, exit_templates):
+                        break
+                    sleep(0.25)
+                sleep(1)
+                continue
+
+            if is_template_matched(sct, monitor, exit_templates) \
+            and not is_template_matched(sct, monitor, "missions_small_complete_btn", color_match=True, color_space="bgr"):
+                if self.missions_handle_expansions(sct, monitor):
+                    continue
                 if DEBUG:
                     print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Finished Missions complete loop")
                 return
@@ -927,6 +933,7 @@ class Bot:
             if self.check_if_home_screen(sct, monitor):
                 print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Unexpectedly at Home screen")
                 return False
+
             sleep(1)
 
     def missions_handle_expansions(self, sct, monitor):
@@ -1423,7 +1430,7 @@ def launch_game():
                     break
             sleep(3)
 
-            '''workaround for win32gui.SetForegroundWindow() to work'''
+            # workaround for win32gui.SetForegroundWindow() to work
             # runs new py script and exit the old one
             restart_script()
 

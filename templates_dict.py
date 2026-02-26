@@ -23,6 +23,7 @@ BOOSTER_PACK_TO_TEMPLATES = {
         "mega gyarados": "booster_pack_mega_gyarados",
         "crimson blaze": "booster_pack_crimson_blaze",
         "fantastical parade": "booster_pack_fantastical_parade",
+        "paldean wonders": "booster_pack_paldean wonders"
     }
 }
 
@@ -51,6 +52,7 @@ TEMPLATES = {
     "booster_pack_mega_gyarados": "images/booster_pack_mega_gyarados.png",
     "booster_pack_crimson_blaze": "images/booster_pack_crimson_blaze.png",
     "booster_pack_fantastical_parade": "images/booster_pack_fantastical_parade.png",
+    "booster_pack_paldean wonders": "images/booster_pack_paldean wonders.png",
 
     "card_milestone": "images/card_milestone.png",
     "card_new_dex": "images/card_new_dex.png",
@@ -111,7 +113,7 @@ TEMPLATES = {
 
     # Missions
     "missions_claim_btn": "images/missions_claim_btn.png",
-    "missions_claimed_all_rewards_screen": "images/missions_claimed_all_rewards_screen.png",
+    # "missions_claimed_all_rewards_screen": "images/missions_claimed_all_rewards_screen.png",  # unused
     "missions_complete_all_btn": "images/missions_complete_all_btn.png",
     "missions_big_complete_btn": "images/missions_big_complete_btn.png",
     "missions_small_complete_btn": "images/missions_small_complete_btn.png",
