@@ -271,7 +271,7 @@ class Bot:
             if self.check_if_home_screen(sct, monitor):
                 if DEBUG:
                     print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Started at Home screen")
-                sleep(3)
+                sleep(5)
                 self.check_gifts(sct, monitor)
                 self.check_shop(sct, monitor)
                 self.check_missions(sct, monitor)
@@ -374,6 +374,7 @@ class Bot:
 
         self.booster_packs_available = False
         self.go_to_home_screen(sct, monitor)
+        sleep(3)
         self.check_news(sct, monitor)
         return
 
@@ -780,7 +781,7 @@ class Bot:
                         move_to_click(missions)
                         for _ in range(10):
                             if not is_template_matched(sct, monitor, template):
-                                sleep(5)
+                                sleep(7.5)
                                 return True
                             sleep(0.1)
                 sleep(0.25)
@@ -945,13 +946,15 @@ class Bot:
                 break
 
         if expansion_btn:
+            if DEBUG:
+                print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Missions: Expansion btn detected")
             move_to_click(expansion_btn)
             sleep(1)
             expansions_windows = ["missions_expansions_missions_window", "missions_expansions_themed_collections_window"]
             for template in expansions_windows:
                 exp_window = check_template(sct, monitor, template)
                 if exp_window:
-                    exp_window_scroll = offset_boxes(exp_window, y_offset=450)
+                    exp_window_scroll = offset_boxes(exp_window, y_offset=400)
                     max_attempts = 10
                     for _ in range(max_attempts):
                         expansion = check_template(sct, monitor, "missions_expansions_reward_icon")
