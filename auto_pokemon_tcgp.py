@@ -90,7 +90,7 @@ class Bot:
                 self.booster_packs_available = True
                 print(f"[{current_datetime().strftime('%H:%M:%S')}] Booster Pack available to be open")
                 return True
-            sleep(0.25)
+            sleep(0.5)
 
         self.booster_packs_available = False
         return False
@@ -106,7 +106,7 @@ class Bot:
             return True
 
         if DEBUG:
-            print(f"\n[DEBUG {current_datetime().strftime('%H:%M:%S')}] Gifts not available at Home screen")
+            print(f"\n[DEBUG {current_datetime().strftime('%H:%M:%S')}] Gifts not available")
         self.gifts_available = False
         return False
 
@@ -120,6 +120,8 @@ class Bot:
             self.shop_daily_gifts_available = True
             return True
 
+        if DEBUG:
+            print(f"\n[DEBUG {current_datetime().strftime('%H:%M:%S')}] Shop's Daily Gifts not available")
         self.shop_daily_gifts_available = False
         return False
 
@@ -130,6 +132,8 @@ class Bot:
         max_attempts = 120
         for _ in range(max_attempts):
             if is_template_matched(sct, monitor, ["home_missions_btn_0", "home_missions_btn_0_mark"]):
+                if DEBUG:
+                    print(f"\n[DEBUG {current_datetime().strftime('%H:%M:%S')}] Missions rewards not available")
                 # self.missions_rewards_available = False
                 return False
 
@@ -138,7 +142,7 @@ class Bot:
                     print(f"\n[DEBUG {current_datetime().strftime('%H:%M:%S')}] Missions rewards available")
                 self.missions_rewards_available = True
                 return True
-            sleep(0.25)
+            sleep(0.5)
         else:
             print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Couldn't find Missions from Home screen")
             return False
@@ -146,10 +150,12 @@ class Bot:
     def check_news(self, sct, monitor):
         for _ in range(12):
             if is_template_matched(sct, monitor, "news_window"):
-                print(f"[{current_datetime().strftime('%H:%M:%S')}] Fresh news window; closing.")
+                print(f"[{current_datetime().strftime('%H:%M:%S')}] Fresh News available")
+                sleep(1.5)
                 click_x(sct, monitor)
-        sleep(0.25)
-        return
+                return True
+            # sleep(0.5)
+        return False
 
     def check_level_up(self, sct, monitor):
         if self.have_leveled_up:
@@ -172,7 +178,7 @@ class Bot:
                     click_tap_to_proceed(sct, monitor)
                     if is_template_matched(sct, monitor, "level_up_unlocked"):
                         click_ok(sct, monitor)
-                    print(f"[{current_datetime().strftime('%H:%M:%S')}] Leveled up")
+                    print(f"[{current_datetime().strftime('%H:%M:%S')}] Leveled up!")
                     return True
                 sleep(1)
             else:
@@ -280,7 +286,7 @@ class Bot:
             if self.check_booster_pack(sct, monitor):
                 return True
 
-            sleep(0.25)
+            sleep(0.5)
         else:
             print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to Start Game")
             if enable_exit_app:
@@ -314,7 +320,7 @@ class Bot:
                                 self.handle_level_up(sct, monitor)
                             return True
                         sleep(0.1)
-            sleep(0.25)
+            sleep(0.5)
         else:
             print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Couldn't get to Home screen")
             return False
@@ -353,7 +359,7 @@ class Bot:
                     elif DEBUG:
                         print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] at Booster Pack screen")
                     return True
-            sleep(0.25)
+            sleep(0.5)
         else:
             print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to get to Booster Pack screen")
             return False
@@ -374,7 +380,7 @@ class Bot:
 
         self.booster_packs_available = False
         self.go_to_home_screen(sct, monitor)
-        sleep(3)
+        sleep(4.5)
         self.check_news(sct, monitor)
         return
 
@@ -488,7 +494,7 @@ class Bot:
 
                 boxes = offset_boxes(boxes, zero_w_h=True)
                 mouse_drag_scroll(boxes, x_offset=500, duration=0.5, drag=True)
-            sleep(0.25)
+            sleep(0.5)
         else:
             print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to slice open pack")
         return
@@ -506,17 +512,20 @@ class Bot:
 
             boxes = offset_boxes(boxes, zero_w_h=True)
             mouse_drag_scroll(boxes, x_offset=500, duration=0.5, drag=True)
-            sleep(0.25)
+            sleep(0.5)
         else:
             print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to slice open pack")
         return
     '''
 
     def handle_card_collection_milestone(self, sct, monitor):
-        if is_template_matched(sct, monitor, "card_milestone"):  # card collection milestone
-            click_tap_to_proceed(sct, monitor)
-            sleep(3)
-        return
+        for _ in range(12):
+            if is_template_matched(sct, monitor, "card_milestone"):  # card collection milestone
+                click_tap_to_proceed(sct, monitor)
+                sleep(3)
+                return True
+            # sleep(0.5)
+        return False
 
     def handle_card_new_dex(self, sct, monitor):
         if is_template_matched(sct, monitor, "card_new_dex"):  # if new cards, register to dex
@@ -628,7 +637,12 @@ class Bot:
                         # what's next?
         """
 
-        click_x(sct, monitor)
+        click_x(sct, monitor, sleep_duration=3)
+
+        for _ in range(20):  # Wait for Home screen
+            if self.check_if_home_screen(sct, monitor):
+                break
+            sleep(0.5)
         return
 
     def check_wonder_pick_sneak_peeks(self, sct, monitor):
@@ -657,7 +671,7 @@ class Bot:
             # normal Random Card Pick screen
             if is_template_matched(sct, monitor, "wonder_pick_pick_a_card_screen"):
                 return True
-            sleep(0.25)
+            sleep(0.5)
         else:
             print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to handle Sneak Peeks")
             return False
@@ -713,11 +727,11 @@ class Bot:
                         found_ok_btn = True
                         if ok_btn == "wonder_pick_sneak_peek_ok_btn":
                             self.wonder_pick_sneak_peeks_available = True
-                        sleep(0.25)
+                        sleep(0.5)
                         move_to_click(matched_ok_btn)
                         break
                     if i < 60 - 1:
-                        sleep(0.25)
+                        sleep(0.5)
 
             print(f"[{current_datetime().strftime('%H:%M:%S')}] Wonder Pick: '{pick}'")
             click_skip(sct, monitor, confirm_click=True)
@@ -749,7 +763,7 @@ class Bot:
                         sleep(1)  # wait for Wonder Pick screen
                         break
 
-                    sleep(0.25)
+                    sleep(0.5)
         if DEBUG:
             print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Wonder Pick completed")
         self.go_to_home_screen(sct, monitor)
@@ -784,7 +798,7 @@ class Bot:
                                 sleep(7.5)
                                 return True
                             sleep(0.1)
-                sleep(0.25)
+                sleep(0.5)
             else:
                 print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Couldn't get to Home screen")
                 return False
@@ -817,9 +831,14 @@ class Bot:
 
         self.missions_themed_collections(sct, monitor)
 
-        click_x(sct, monitor)
         self.missions_rewards_available = False
         print(f"[{current_datetime().strftime('%H:%M:%S')}] Missions clear")
+        click_x(sct, monitor, sleep_duration=3)
+
+        for _ in range(20):  # Wait for Home screen
+            if self.check_if_home_screen(sct, monitor):
+                break
+            sleep(0.5)
         return
 
     def missions_horizontal_scroll(self, sct, monitor):
@@ -841,7 +860,7 @@ class Bot:
         if DEBUG:
             print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Handling Missions complete loop")
         move_to_click(complete_all)
-        sleep(6.5)
+        sleep(7.5)
 
         for _ in range(5):
             complete_all = check_template(sct, monitor, "missions_complete_all_btn", color_match=True)
@@ -888,6 +907,7 @@ class Bot:
         if not small_complete:
             return
 
+        small_complete_ctn: int = 1
         if DEBUG:
             print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Handling Missions complete loop")
         move_to_click(small_complete)
@@ -899,6 +919,8 @@ class Bot:
             # small complete btn - shadows in background can make btn slightly darker
             small_complete = check_template(sct, monitor, "missions_small_complete_btn", color_match=True, color_space="bgr")
             if small_complete:
+                small_complete_ctn += 1
+                print(f"[{current_datetime().strftime('%H:%M:%S')}] Missions: Handling small complete #{small_complete_ctn}")
                 move_to_click(small_complete)
                 sleep(3)
 
@@ -919,7 +941,7 @@ class Bot:
                     # x_close_btn for usual complete loop, back_arrow_btn for themed_collection
                     if is_template_matched(sct, monitor, exit_templates):
                         break
-                    sleep(0.25)
+                    sleep(0.5)
                 sleep(1)
                 continue
 
@@ -943,11 +965,11 @@ class Bot:
         for template in templates:
             expansion_btn = check_template(sct, monitor, template, color_match=True)
             if expansion_btn:
+                if DEBUG:
+                    print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Missions: Expansions btn detected")
                 break
 
         if expansion_btn:
-            if DEBUG:
-                print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Missions: Expansion btn detected")
             move_to_click(expansion_btn)
             sleep(1)
             expansions_windows = ["missions_expansions_missions_window", "missions_expansions_themed_collections_window"]
@@ -964,7 +986,7 @@ class Bot:
                             return True
 
                         mouse_drag_scroll(exp_window_scroll, y_offset=-450)
-                        sleep(0.25)
+                        sleep(0.5)
                     else:
                         click_x(sct, monitor)
         return False
@@ -998,7 +1020,7 @@ class Bot:
                                 sleep(3)
                                 return True
                             sleep(0.1)
-                sleep(0.25)
+                sleep(0.5)
             else:
                 print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Couldn't get to Battle screen")
                 return False
@@ -1042,6 +1064,16 @@ class Bot:
             if battle_result and not self.gifts_available:
                 self.gifts_available = True
 
+            # Wait for Battle screen / handle New Battle Unlocked
+            stop_templates = ["battle_solo_drop_event_screen", "back_arrow_btn"]
+            for _ in range(40):
+                if is_template_matched(sct, monitor, "battle_end_victory_new_battle_unlocked"):
+                    print(f"\n[{current_datetime().strftime('%H:%M:%S')}] Battle: New Battle Unlocked")
+                    click_ok(sct, monitor)
+                if is_template_matched(sct, monitor, stop_templates):
+                    break
+                sleep(0.5)
+
             if (battle_result and enable_battle_victory_repeat) \
                    or (not battle_result and enable_battle_defeat_redo):
                 print(f"[{current_datetime().strftime('%H:%M:%S')}] Battle: continuing after {'Victory' if battle_result else 'Defeat'}")
@@ -1084,7 +1116,7 @@ class Bot:
                             if event_btn:
                                 move_to_click(event_btn)
                                 return True
-                        sleep(0.25)
+                        sleep(0.5)
                     else:
                         print(f"[ERROR {current_datetime().strftime('%H:%M:%S')}] Failed to find Drop Event")
                         return False
@@ -1258,9 +1290,6 @@ class Bot:
                     sleep(1)
 
                 click_next(sct, monitor)  # player exp and first-time rewards
-
-                if is_template_matched(sct, monitor, "battle_end_victory_new_battle_unlocked"):
-                    click_ok(sct, monitor)
 
                 # sleep(3)
                 return True  # victory
