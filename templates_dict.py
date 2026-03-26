@@ -23,7 +23,8 @@ BOOSTER_PACK_TO_TEMPLATES = {
         "mega gyarados": "booster_pack_mega_gyarados",
         "crimson blaze": "booster_pack_crimson_blaze",
         "fantastical parade": "booster_pack_fantastical_parade",
-        "paldean wonders": "booster_pack_paldean_wonders"
+        "paldean wonders": "booster_pack_paldean_wonders",
+        "mega shine": "booster_pack_mega_shine",
     }
 }
 
@@ -53,6 +54,7 @@ TEMPLATES = {
     "booster_pack_crimson_blaze": "images/booster_pack_crimson_blaze.png",
     "booster_pack_fantastical_parade": "images/booster_pack_fantastical_parade.png",
     "booster_pack_paldean_wonders": "images/booster_pack_paldean_wonders.png",
+    "booster_pack_mega_shine": "images/booster_pack_mega_shine.png",
 
     "card_milestone": "images/card_milestone.png",
     "card_new_dex": "images/card_new_dex.png",

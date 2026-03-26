@@ -13,7 +13,7 @@ Enable "Fix Window Size"
 
 # `desired_booster_packs` choices for config.yaml:
 "charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee", "ho-oh", "lugia", "suicune", "deluxe pack ex"
-"mega altaria", "mega blaziken", "mega gyarados", "crimson blaze", "fantastical parade", "paldean wonders"
+"mega altaria", "mega blaziken", "mega gyarados", "crimson blaze", "fantastical parade", "paldean wonders", "mega shine"
 """
 
 
