@@ -25,6 +25,7 @@ BOOSTER_PACK_TO_TEMPLATES = {
         "fantastical parade": "booster_pack_fantastical_parade",
         "paldean wonders": "booster_pack_paldean_wonders",
         "mega shine": "booster_pack_mega_shine",
+        "pulsing aura": "booster_pack_pulsing_aura",
     }
 }
 
@@ -55,6 +56,7 @@ TEMPLATES = {
     "booster_pack_fantastical_parade": "images/booster_pack_fantastical_parade.png",
     "booster_pack_paldean_wonders": "images/booster_pack_paldean_wonders.png",
     "booster_pack_mega_shine": "images/booster_pack_mega_shine.png",
+    "booster_pack_pulsing_aura": "images/booster_pack_pulsing_aura.png",
 
     "card_milestone": "images/card_milestone.png",
     "card_new_dex": "images/card_new_dex.png",

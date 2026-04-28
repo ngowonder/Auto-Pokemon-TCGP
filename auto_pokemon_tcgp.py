@@ -13,7 +13,7 @@ Enable "Fix Window Size"
 
 # `desired_booster_packs` choices for config.yaml:
 "charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee", "ho-oh", "lugia", "suicune", "deluxe pack ex"
-"mega altaria", "mega blaziken", "mega gyarados", "crimson blaze", "fantastical parade", "paldean wonders", "mega shine"
+"mega altaria", "mega blaziken", "mega gyarados", "crimson blaze", "fantastical parade", "paldean wonders", "mega shine", "pulsing aura"
 """
 
 
@@ -315,7 +315,7 @@ class Bot:
                     move_to_click(home)
                     for _ in range(10):
                         if self.check_if_home_screen(sct, monitor):
-                            sleep(3)
+                            sleep(4.5)
                             if self.have_leveled_up:
                                 self.handle_level_up(sct, monitor)
                             return True
@@ -794,7 +794,8 @@ class Bot:
                     if missions:
                         move_to_click(missions)
                         for _ in range(10):
-                            if not is_template_matched(sct, monitor, template):
+                            if not is_template_matched(sct, monitor, template) \
+                                and is_template_matched(sct, monitor, "x_close_btn"):
                                 sleep(7.5)
                                 return True
                             sleep(0.1)
@@ -866,7 +867,7 @@ class Bot:
             complete_all = check_template(sct, monitor, "missions_complete_all_btn", color_match=True)
             if complete_all:
                 move_to_click(complete_all)
-                sleep(5)
+                sleep(6.5)
 
             ok_btn = check_template(sct, monitor, "ok_btn")
             if ok_btn:
@@ -1256,14 +1257,15 @@ class Bot:
                 if rewards:
                     move_to_click(rewards)
                     sleep(1)
-                click_next(sct, monitor, sleep_duration=2.0)
+                click_next(sct, monitor, sleep_duration=3.0)
 
                 # "type/deck is recommended" window
                 templates = ["battle_end_defeat_deck_recommended_window_0", "battle_end_defeat_deck_recommended_window_1"]
                 for template in templates:
-                    deck_recommended_window = check_template(sct, monitor, template)
+                    deck_recommended_window = check_template(sct, monitor, template, threshold=0.6)
                     if deck_recommended_window:
-                        back_btn = check_template(sct, monitor, "battle_end_defeat_back_btn")  # Old; for deck recommended window
+                        print(f"[DEBUG {current_datetime().strftime('%H:%M:%S')}] Battle ended: Deck is recommended")
+                        back_btn = check_template(sct, monitor, "battle_end_defeat_back_btn")  # Old
                         if back_btn:
                             move_to_click(back_btn)
                         x_btn = check_template(sct, monitor, "x_close_btn")
