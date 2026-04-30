@@ -878,7 +878,7 @@ class Bot:
             if is_template_matched(sct, monitor, "tap_to_proceed_btn"):
                 break_templates = ["card_new_dex", "ok_btn"]
                 while True:
-                    click_tap_to_proceed() # single card reward
+                    click_tap_to_proceed(sct, monitor) # single card reward
                     if is_template_matched(sct, monitor, break_templates):
                         break
                     sleep(1)
