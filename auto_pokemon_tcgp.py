@@ -882,7 +882,7 @@ class Bot:
                     if is_template_matched(sct, monitor, break_templates):
                         break
                     sleep(1)
-                self.handle_card_new_dex()
+                self.handle_card_new_dex(sct, monitor)
                 for _ in range(2):
                     ok_btn = check_template(sct, monitor, "ok_btn")
                     if ok_btn:
