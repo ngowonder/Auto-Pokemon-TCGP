@@ -26,6 +26,7 @@ BOOSTER_PACK_TO_TEMPLATES = {
         "paldean wonders": "booster_pack_paldean_wonders",
         "mega shine": "booster_pack_mega_shine",
         "pulsing aura": "booster_pack_pulsing_aura",
+        "paradox_drive": "booster_pack_paradox_drive",
     }
 }
 
@@ -57,6 +58,7 @@ TEMPLATES = {
     "booster_pack_paldean_wonders": "images/booster_pack_paldean_wonders.png",
     "booster_pack_mega_shine": "images/booster_pack_mega_shine.png",
     "booster_pack_pulsing_aura": "images/booster_pack_pulsing_aura.png",
+    "booster_pack_paradox_drive": "images/booster_pack_paradox_drive.png",
 
     "card_milestone": "images/card_milestone.png",
     "card_new_dex": "images/card_new_dex.png",
