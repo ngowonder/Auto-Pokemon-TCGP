@@ -26,7 +26,7 @@ BOOSTER_PACK_TO_TEMPLATES = {
         "paldean wonders": "booster_pack_paldean_wonders",
         "mega shine": "booster_pack_mega_shine",
         "pulsing aura": "booster_pack_pulsing_aura",
-        "paradox_drive": "booster_pack_paradox_drive",
+        "paradox drive": "booster_pack_paradox_drive",
     }
 }
 
