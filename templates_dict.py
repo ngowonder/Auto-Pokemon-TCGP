@@ -27,6 +27,7 @@ BOOSTER_PACK_TO_TEMPLATES = {
         "mega shine": "booster_pack_mega_shine",
         "pulsing aura": "booster_pack_pulsing_aura",
         "paradox drive": "booster_pack_paradox_drive",
+        "everyday wonders": "booster_pack_everyday_wonders",
     }
 }
 
@@ -59,6 +60,7 @@ TEMPLATES = {
     "booster_pack_mega_shine": "images/booster_pack_mega_shine.png",
     "booster_pack_pulsing_aura": "images/booster_pack_pulsing_aura.png",
     "booster_pack_paradox_drive": "images/booster_pack_paradox_drive.png",
+    "booster_pack_everyday_wonders": "images/booster_pack_everyday_wonders",
 
     "card_milestone": "images/card_milestone.png",
     "card_new_dex": "images/card_new_dex.png",

@@ -7,11 +7,11 @@
 
 ##  Flow-style lists (uncomment a list to use and comment the other to avoid conflict)
 ### All Packs
-# desired_booster_packs: ["charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee", "ho-oh", "lugia", "suicune", "deluxe pack ex", "mega altaria", "mega blaziken", "mega gyarados", "crimson blaze", "fantastical parade", "paldean wonders", "mega shine", "pulsing aura", "paradox drive"]
+# desired_booster_packs: ["charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee", "ho-oh", "lugia", "suicune", "deluxe pack ex", "mega altaria", "mega blaziken", "mega gyarados", "crimson blaze", "fantastical parade", "paldean wonders", "mega shine", "pulsing aura", "paradox drive", "everyday wonders"]
 ### A Series
 # desired_booster_packs: ["charizard", "mewtwo", "pikachu", "mew", "dialga", "palkia", "arceus", "shiny", "lunala", "solgaleo", "buzzwole", "eevee", "ho-oh", "lugia", "suicune", "deluxe pack ex"]
 ### B Series
-# desired_booster_packs: ["mega altaria", "mega blaziken", "mega gyarados", "crimson blaze", "fantastical parade", "paldean wonders", "mega shine", "pulsing aura", "paradox drive"]
+# desired_booster_packs: ["mega altaria", "mega blaziken", "mega gyarados", "crimson blaze", "fantastical parade", "paldean wonders", "mega shine", "pulsing aura", "paradox drive", "everyday wonders"]
 
 ## Block-style list (items must be indented and each item must begin with a hyphen)
 desired_booster_packs:
@@ -39,7 +39,8 @@ desired_booster_packs:
     # - paldean wonders
     # - mega shine
     # - pulsing aura
-    - paradox drive
+    # - paradox drive
+    - everyday wonders
 
 # Control flags for various features
 debug: false
