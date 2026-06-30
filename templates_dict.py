@@ -60,7 +60,7 @@ TEMPLATES = {
     "booster_pack_mega_shine": "images/booster_pack_mega_shine.png",
     "booster_pack_pulsing_aura": "images/booster_pack_pulsing_aura.png",
     "booster_pack_paradox_drive": "images/booster_pack_paradox_drive.png",
-    "booster_pack_everyday_wonders": "images/booster_pack_everyday_wonders",
+    "booster_pack_everyday_wonders": "images/booster_pack_everyday_wonders.png",
 
     "card_milestone": "images/card_milestone.png",
     "card_new_dex": "images/card_new_dex.png",
