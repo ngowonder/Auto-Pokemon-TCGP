@@ -28,6 +28,7 @@ BOOSTER_PACK_TO_TEMPLATES = {
         "pulsing aura": "booster_pack_pulsing_aura",
         "paradox drive": "booster_pack_paradox_drive",
         "everyday wonders": "booster_pack_everyday_wonders",
+        "ruler of the skies": "booster_pack_ruler_of_the_skies",
     }
 }
 
@@ -61,6 +62,7 @@ TEMPLATES = {
     "booster_pack_pulsing_aura": "images/booster_pack_pulsing_aura.png",
     "booster_pack_paradox_drive": "images/booster_pack_paradox_drive.png",
     "booster_pack_everyday_wonders": "images/booster_pack_everyday_wonders.png",
+    "booster_pack_ruler_of_the_skies": "images/booster_pack_ruler_of_the_skies.png",
 
     "card_milestone": "images/card_milestone.png",
     "card_new_dex": "images/card_new_dex.png",
