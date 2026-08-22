@@ -46,14 +46,14 @@ desired_booster_packs:
 # Control flags for various features
 debug: false
 enable_check_pack_screen: true
-enable_shop_buy_monthly_hourglasses: true  # buys monthly hourglasses 1st or 2nd day of month
+enable_shop_buy_monthly_hourglasses: true  # buys monthly hourglasses 2nd or 28th of month
 enable_wonder_pick: true
 enable_special_wonder_picks: true  # special Wonder Picks that uses stamina (e.g., Chansey, Rare)
 enable_exit_app: true
 
 # Battle settings
 enable_event_battle: true
-desired_battle_difficulty: expert  # Difficulty choices: beginner, intermediate, advanced, expert
+desired_battle_difficulty: expert  # Difficulties: beginner, intermediate, advanced, expert
 enable_battle_difficulty_fallback: true
 battle_check_time: 240  # Seconds to sleep before battle check (0 is False for no sleep)
 enable_battle_defeat_redo: true  # Redo battle on defeat

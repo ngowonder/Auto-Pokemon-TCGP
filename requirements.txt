@@ -1,6 +1,6 @@
-opencv-python==4.8.0.76
+opencv-python>=4.10
 mss
-numpy>=1.20,<2
+numpy>=2.0.1
 pyautogui
 psutil
 pywin32

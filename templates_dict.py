@@ -15,7 +15,7 @@ BOOSTER_PACK_TO_TEMPLATES = {
         "ho-oh": "booster_pack_ho-oh",
         "lugia": "booster_pack_lugia",
         "suicune": "booster_pack_suicune",
-        "deluxe pack ex": "booster_pack_deluxe_pack_ex",  # limited-time
+        "deluxe pack ex": "booster_pack_deluxe_pack_ex",
     },
     "booster_pack_series_b": {
         "mega altaria": "booster_pack_mega_altaria",
@@ -49,7 +49,7 @@ TEMPLATES = {
     "booster_pack_ho-oh": "images/booster_pack_ho-oh.png",
     "booster_pack_lugia": "images/booster_pack_lugia.png",
     "booster_pack_suicune": "images/booster_pack_suicune.png",
-    "booster_pack_deluxe_pack_ex": "images/booster_pack_deluxe_pack_ex.png",  # limited-time
+    "booster_pack_deluxe_pack_ex": "images/booster_pack_deluxe_pack_ex.png",
 
     "booster_pack_series_b": "images/booster_pack_series_b.png",
     "booster_pack_mega_altaria": "images/booster_pack_mega_altaria.png",
@@ -74,10 +74,9 @@ TEMPLATES = {
     "pack_select_package_0": "images/pack_select_package_0.png",
     "pack_select_package_1": "images/pack_select_package_1.png",
 
-    # Start
     "start_screen": "images/start_screen.png",
     "pokemon_tcgp_update_app": "images/pokemon_tcgp_update_app.png",
-    "pokemon_tcgp_update_data": "images/pokemon_tcgp_update_data.jpg",  # TODO get png
+    "pokemon_tcgp_update_data": "images/pokemon_tcgp_update_data.jpg",
     "pokemon_tcgp_update_privacy_notice": "images/pokemon_tcgp_update_privacy_notice.png",
     "pokemon_tcgp_update_privacy_notice_btn": "images/pokemon_tcgp_update_privacy_notice_btn.png",
     "pokemon_tcgp_update_terms_of_use": "images/pokemon_tcgp_update_terms_of_use.png",
@@ -88,13 +87,11 @@ TEMPLATES = {
     "google_play_update_btn": "images/google_play_update_btn.png",
     "google_play_play_btn": "images/google_play_play_btn.png",
  
-    # Home
     "home_battle_btn_0": "images/home_battle_btn_0.png",
     "home_battle_btn_0_dot": "images/home_battle_btn_0_dot.png",
     "home_btn_0": "images/home_btn_0.png",
     "home_btn_1": "images/home_btn_1.png",
     "home_btn_level_up": "images/home_btn_level_up.png",
-    # "home_pack": "images/home_pack.png",  # deprecated
     "home_pack_expansion_btn": "images/home_pack_expansion_btn.png",
     "home_gifts_btn": "images/home_gifts_btn.png",
     "home_missions_btn_0": "images/home_missions_btn_0.png",
@@ -104,8 +101,8 @@ TEMPLATES = {
     "home_wonder_pick_btn": "images/home_wonder_pick_btn.png",
     "home_wonder_pick_sneak_peeks": "images/home_wonder_pick_sneak_peeks.png",
 
-    "level_up": "images/level_up.jpg",  # TODO get png
-    "level_up_unlocked": "images/level_up_unlocked.jpg",  # TODO get png
+    "level_up": "images/level_up.jpg",
+    "level_up_unlocked": "images/level_up_unlocked.jpg",
     "news_window": "images/news_window.png",
 
     "back_arrow_btn": "images/back_arrow_btn.png",
@@ -116,31 +113,29 @@ TEMPLATES = {
     "tap_to_proceed_btn": "images/tap_to_proceed_btn.png",
     "x_close_btn": "images/x_close_btn.png",
 
-    # Gifts
     "gifts_screen": "images/gifts_screen.png",
     "gifts_claim_all_btn": "images/gifts_claim_all_btn.png",
     "gifts_claim_btn": "images/gifts_claim_btn.png",
     "gifts_no_claimable_items_screen": "images/gifts_no_claimable_items_screen.png",
 
-    # Missions
     "missions_claim_btn": "images/missions_claim_btn.png",
-    # "missions_claimed_all_rewards_screen": "images/missions_claimed_all_rewards_screen.png",  # unused
     "missions_complete_all_btn": "images/missions_complete_all_btn.png",
     "missions_big_complete_btn": "images/missions_big_complete_btn.png",
     "missions_small_complete_btn": "images/missions_small_complete_btn.png",
     "missions_expansions_btn": "images/missions_expansions_btn.png",
-    "missions_expansions_view_more_btn": "images/missions_expansions_view_more_btn.png",  # 1/29/26 updated expansions_btn
+    "missions_expansions_view_more_btn": "images/missions_expansions_view_more_btn.png",
     "missions_expansions_reward_icon": "images/missions_expansions_reward_icon.png",
     "missions_expansions_missions_window": "images/missions_expansions_missions_window.png",
     "missions_expansions_themed_collections_window": "images/missions_expansions_themed_collections_window.png",
     "missions_tab_premium": "images/missions_tab_premium.png",
     "missions_themed_collections_btn": "images/missions_themed_collections_btn.png",
 
-    # Shop
-    # "shop_screen": "images/shop_screen.png",  # unused
     "shop_daily_gift": "images/shop_daily_gifts.png",
+    "shop_pack_hourglass": "images/shop_pack_hourglass.png",
+    "shop_wonder_hourglass": "images/shop_wonder_hourglass.png",
+    # "shop_max_qty_btn_0": "images/shop_max_qty_btn_0.png",  # unused
+    "shop_max_qty_btn_1": "images/shop_max_qty_btn_1.png",
 
-    # Wonder Pick
     "wonder_pick_screen": "images/wonder_pick_screen.png",
     "wonder_pick_bonus": "images/wonder_pick_bonus.png",
     "wonder_pick_chansey": "images/wonder_pick_chansey.png",
@@ -156,13 +151,11 @@ TEMPLATES = {
     "wonder_pick_sneak_peek_take_a_peek_btn_0": "images/wonder_pick_sneak_peek_take_a_peek_btn_0.png",
     "wonder_pick_sneak_peek_take_a_peek_btn_1": "images/wonder_pick_sneak_peek_take_a_peek_btn_1.png",
 
-    # Battle
     "battle_solo_btn_0": "images/battle_solo_btn_0.png",
-    "battle_solo_btn_1": "images/battle_solo_btn_1.png",  # "Event underway!"
-    # "battle_solo_btn_2": "images/battle_solo_btn_2.png",  # NOTE do i need the "Ending soon"?
+    "battle_solo_btn_1": "images/battle_solo_btn_1.png",
     "battle_solo_screen": "images/battle_solo_screen.png",
-    "battle_solo_drop_event_btn": "images/battle_solo_drop_event_btn.png",  # old
-    "battle_solo_event_btn": "images/battle_solo_event_btn.png",  # new 2026/2/12
+    "battle_solo_drop_event_btn": "images/battle_solo_drop_event_btn.png",
+    "battle_solo_event_btn": "images/battle_solo_event_btn.png",
     "battle_solo_drop_event_screen": "images/battle_solo_drop_event_screen.png",
     "battle_solo_event_stamina": "images/battle_solo_event_stamina.png",
     "battle_diff_beginner": "images/battle_solo_diff_beginner.png",
@@ -170,12 +163,13 @@ TEMPLATES = {
     "battle_diff_advanced": "images/battle_solo_diff_advanced.png",
     "battle_diff_expert": "images/battle_solo_diff_expert.png",
     "battle_rules_screen": "images/battle_rules_screen.png",
+    "battle_rules_screen_1": "images/battle_rules_screen_1.png",
     "battle_rules_auto_btn": "images/battle_rules_auto_btn.png",
     "battle_rules_battle_btn": "images/battle_rules_battle_btn.png",
     "battle_end_defeat": "images/battle_end_defeat.png",
-    "battle_end_defeat_deck_recommended_window_0": "images/battle_end_defeat_deck_recommended_window_0.png",  # Old
+    "battle_end_defeat_deck_recommended_window_0": "images/battle_end_defeat_deck_recommended_window_0.png",
     "battle_end_defeat_deck_recommended_window_1": "images/battle_end_defeat_deck_recommended_window_1.png",
-    "battle_end_defeat_back_btn": "images/battle_end_defeat_back_btn.png",  # Old; for deck recommended window
+    "battle_end_defeat_back_btn": "images/battle_end_defeat_back_btn.png",
     "battle_end_tie": "images/battle_end_tie.png",
     "battle_end_victory": "images/battle_end_victory.png",
     "battle_end_victory_tap_to_proceed_btn": "images/battle_end_victory_tap_to_proceed_btn.png",
@@ -184,9 +178,4 @@ TEMPLATES = {
     "bluestacks_pokemon_tcgp_icon": "images/bluestacks_pokemon_tcgp_icon.png",
     "bluestacks_close_btn": "images/bluestacks_close_btn.png",
     "bluestacks_x_btn": "images/bluestacks_x_btn.png",
-
-    # Add more templates as needed
-        # '': cv2.imread('images/.jpg'),
-    # To use templates
-        # template = templates.get(template_key)
 }
