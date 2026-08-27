@@ -29,6 +29,7 @@ BOOSTER_PACK_TO_TEMPLATES = {
         "paradox drive": "booster_pack_paradox_drive",
         "everyday wonders": "booster_pack_everyday_wonders",
         "ruler of the skies": "booster_pack_ruler_of_the_skies",
+        "team_rockets_ambition": "booster_pack_team_rockets_ambition",
     }
 }
 
@@ -63,6 +64,7 @@ TEMPLATES = {
     "booster_pack_paradox_drive": "images/booster_pack_paradox_drive.png",
     "booster_pack_everyday_wonders": "images/booster_pack_everyday_wonders.png",
     "booster_pack_ruler_of_the_skies": "images/booster_pack_ruler_of_the_skies.png",
+    "booster_pack_team_rockets_ambition": "images/booster_pack_team_rockets_ambition.png",
 
     "card_milestone": "images/card_milestone.png",
     "card_new_dex": "images/card_new_dex.png",
@@ -73,6 +75,7 @@ TEMPLATES = {
     "pack_select_expansion_window": "images/pack_select_expansion_window.png",
     "pack_select_package_0": "images/pack_select_package_0.png",
     "pack_select_package_1": "images/pack_select_package_1.png",
+    "pack_cannot_be_obtained": "images/pack_cannot_be_obtained.png",
 
     "start_screen": "images/start_screen.png",
     "pokemon_tcgp_update_app": "images/pokemon_tcgp_update_app.png",
