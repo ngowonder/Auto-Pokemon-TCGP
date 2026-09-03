@@ -110,6 +110,7 @@ class Bot:
             return True
 
         self.booster_packs_available = False
+        logger.info("No booster pack available to open")
         return False
 
     def check_gifts(self):
@@ -290,6 +291,15 @@ class Bot:
 
             if self.check_booster_pack():
                 return True
+
+            # Time-Based Adaptive Sleep
+            elapsed = monotonic() - start_time
+            if elapsed < 15:
+                sleep(5)
+            elif elapsed < 25:
+                sleep(2)
+            else:
+                sleep(1)
         else:
             logger.error("Failed to Start Game")
             if ENABLE_EXIT_APP:
@@ -308,6 +318,7 @@ class Bot:
             return True
 
         self.check_level_up()
+        self.check_news()
 
         templates = ["home_btn_0", "home_btn_1", "home_btn_level_up"]
         timeout = 15.0
@@ -387,7 +398,9 @@ class Bot:
             booster_pack = random.choice(DESIRED_BOOSTER_PACKS)
         logger.info(f"Booster Pack: opening '{booster_pack}' pack")
 
-        self._select_booster_packs(booster_pack)
+        if not self._select_booster_packs(booster_pack):
+            return False
+
         if self.utils.wait_for_match("pack_can_open_a_booster_pack", timeout=5.0):
             self.utils.wait_for_match("pack_open_btn", timeout=5.0)
 
@@ -404,7 +417,9 @@ class Bot:
 
         self.utils.click_template("pack_open_btn", confirm_click=True)
         self.click_skip()
-        self.open_pack()
+        if not self.open_pack(exit_templates="pack_select_other_booster_packs_btn"):
+            logger.error(f"Failed to open booster pack '{booster_pack}'")
+            return False
 
         logger.info(f"Booster Pack: finish opening '{booster_pack}'")
         return
@@ -438,15 +453,11 @@ class Bot:
             if booster_pack_loc:
                 self.utils.click_template(booster_pack_loc)
                 self.utils.wait_for_match("pack_select_other_booster_packs_btn", timeout=3.0)
-                if not self.utils.check_match("pack_cannot_be_obtained"):
-                    return True
-                else:
-                    logger.warning(f"Pack '{booster_pack}' not found, trying random pack as fallback")
-                    random_pack = random.choice(DESIRED_BOOSTER_PACKS)
-                    if random_pack != booster_pack:
-                        return self._select_booster_packs(random_pack)
-
+                if self.utils.check_match("pack_cannot_be_obtained"):
+                    logger.warning(f"Pack '{booster_pack}' is unobtainable")
+                    self.click_x()
                     return False
+                return True
             else:
                 # scroll down to reveal more packs
                 self.utils.mouse_scroll(select_expansion, y_offset=-350, duration=0.5)
@@ -464,10 +475,12 @@ class Bot:
                 return series_name, series_packs[booster_pack]
         return None, None
 
-    def open_pack(self):
+    def open_pack(self, exit_templates: list[str] = None):
         if not self.utils.wait_for_match("pack_open_slice", timeout=2.5):
             logger.error("No pack found to slices open")
             return False
+
+        logger.debug("Starting to open pack")
 
         # while loop for multiple card packs
         for _ in range(10):
@@ -482,20 +495,37 @@ class Bot:
             if not self.utils.wait_for_match("pack_open_slice", timeout=10.0):
                 break
 
-        temp = ["card_milestone", "card_new_dex", "ok_btn"]
-        everything = self.utils.wait_for_match(temp)
-        if not everything:
+        post_open: list[str] = ["card_milestone", "card_new_dex", "ok_btn", "skip_btn", "skip_btn_1"]
+        if not self.utils.wait_for_match(post_open, timeout=7.5):
+            logger.error("Failed to find post-open screens after pack opened")
             return False
 
-        self._handle_card_collection_milestone()
-        self._handle_card_new_dex()
+        handled_milestone = False
+        handled_new_dex = False
+        for _ in range(10):
+            if not handled_milestone and self._handle_card_collection_milestone():
+                handled_milestone = True
+            if not handled_new_dex and self._handle_card_new_dex():
+                handled_new_dex = True
+            if self.utils.check_match(["skip_btn", "skip_btn_1"]):
+                self.click_skip()
+            if self.utils.check_match("ok_btn"):
+                self.click_ok()  # claim shinedust
 
-        if self.utils.wait_for_match("ok_btn", timeout=2.5):
-            self.click_ok()  # claim shinedust
-        return
+            # for booster_packs() and gifts() screens
+            if exit_templates and self.utils.check_match(exit_templates):
+                return True
+
+            sleep(1)
+        else:
+            logger.error("Unexpected error in open_pack post-open")
+            return False
 
     def _open_pack_slice(self):
         """Trace line to open Pack"""
+        logger.debug("Starting to slice open pack")
+
+        attempt = 0
         stop_templates = ["tap_and_hold_btn", "next_btn"]
         for i in range(60):
             if self.utils.check_match(stop_templates):
@@ -507,6 +537,8 @@ class Bot:
                 leftmost = min(open_slice, key=lambda box: box.x)
 
                 boxes = [Match(leftmost.x, leftmost.y, 0, 0)]
+                attempt += 1
+                logger.debug(f"Slicing pack attempt #{attempt} at position: {leftmost.x}, {leftmost.y}")
                 self.utils.mouse_scroll(boxes, x_offset=500, duration=0.5, drag=True)
             sleep(0.5)
         else:
@@ -514,7 +546,7 @@ class Bot:
         return
 
     def _handle_card_collection_milestone(self):
-        if not self.utils.wait_for_match("card_milestone", timeout=2.5):  # card collection milestone
+        if not self.utils.wait_for_match("card_milestone", timeout=0.5):  # card collection milestone
             return False
 
         logger.info("Card Collection Milestone reached!")
@@ -522,14 +554,13 @@ class Bot:
         sleep(3)
         return True
 
-
     def _handle_card_new_dex(self):
-        if not self.utils.wait_for_match("card_new_dex", timeout=2.5):  # if new cards, register to dex
+        if not self.utils.wait_for_match("card_new_dex", timeout=0.5):  # if new cards, register to dex
             return False
 
         logger.info("New Card added to the Dex!")
         for _ in range(2):
-            self.click_skip()
+            self.click_skip(confirm_click=False)
         self.click_next()
         return True
 
@@ -579,7 +610,7 @@ class Bot:
                 # Fail-safe when claim_all click didn't register / OK pops up
                 if self.utils.wait_for_match("ok_btn", timeout=1.5):
                     self.click_ok()
-                    self.open_pack()
+                    self.open_pack(exit_templates="gifts_screen")
                 self.utils.wait_for_match("gifts_screen")
                 self.utils.wait_for_unmatch("gifts_claim_all_btn", timeout=5.0, threshold=0.98, color_match=True)
 
@@ -590,7 +621,7 @@ class Bot:
                     break
                 self.utils.click_template("gifts_claim_btn", confirm_click=True)
                 self.click_ok()
-                self.open_pack()
+                self.open_pack(exit_templates="gifts_screen")
                 claimed_count += 1
                 self.utils.wait_for_match("gifts_screen")  # wait for gifts_screen before next action
 
@@ -658,12 +689,13 @@ class Bot:
         return True
 
     def _check_wonder_pick_sneak_peeks(self):
-        if not self.utils.check_match("home_wonder_pick_sneak_peeks"):
-            self.wonder_pick_sneak_peeks_available = False
-            return False
-        logger.debug("Wonder Pick's Sneak Peeks available")
-        self.wonder_pick_sneak_peeks_available = True
-        return True
+        if self.utils.check_match("home_wonder_pick_sneak_peeks"):
+            logger.debug("Wonder Pick's Sneak Peeks available")
+            self.wonder_pick_sneak_peeks_available = True
+            return True
+
+        self.wonder_pick_sneak_peeks_available = False
+        return False
 
     def _handle_wonder_pick_sneak_peeks(self):
         if not self.wonder_pick_sneak_peeks_available:
@@ -814,8 +846,8 @@ class Bot:
 
         logger.info("Missions")
         self.go_to_missions_screen()
-        # self.utils.wait_for_match(["missions_complete_all_btn", "missions_complete_btn", "missions_themed_collections_btn"]) 
-        if not self.utils.wait_for_match(["missions_complete_all_btn", "missions_complete_btn", "missions_themed_collections_btn"]):
+
+        if not self.utils.wait_for_match(["missions_complete_all_btn", "missions_small_complete_btn", "missions_themed_collections_btn"]):
             logger.error("Unexpectedly went to Missions with no completed missions")
             return False
 
@@ -827,7 +859,7 @@ class Bot:
                 break
             sleep(0.75)
 
-            if self.utils.check_match("missions_tab_premium", color_match=True):
+            if self.utils.check_match("missions_tab_premium", threshold = 0.97, color_match=True):
                 self._missions_handle_complete_all_loop()  # for case when user has premium
                 break
 
@@ -859,44 +891,44 @@ class Bot:
 
     def _missions_handle_complete_all_loop(self):
         """handle dex missions, bonus week, etc"""
-        complete_all = self.utils.check_match("missions_complete_all_btn", threshold=0.95, color_match=True)
+        complete_all = self.utils.check_match("missions_complete_all_btn", color_match=True, threshold=0.97)
         if not complete_all:
             return False
 
         logger.debug("Handling Missions complete all loop")
-        self.utils.click_template(complete_all)
-        sleep(7.5)
 
-        break_templates = ["card_new_dex", "ok_btn"]
-        for _ in range(5):
-            complete_all = self.utils.check_match("missions_complete_all_btn", threshold=0.95, color_match=True)
+        # First complete_all_btn
+        self.utils.click_template(complete_all, color_match=True, threshold=0.97, sleep_duration=5.0, confirm_click=True)
+
+        # self.utils.wait_for_unmatch("missions_complete_all_btn", color_match=True, threshold=0.97, timeout=2.5)  # NOTE test. don't think it really disappear or inactive
+        self.utils.wait_for_match(["ok_btn", "card_new_dex", "tap_to_proceed_btn", "missions_complete_all_btn"], color_match=True, threshold=0.97, timeout=10.0)
+
+        for _ in range(10):
+            # Click complete_all again if it reappeared (up to 2 clicks max observed)
+            complete_all = self.utils.check_match("missions_complete_all_btn", threshold=0.97, color_match=True)
             if complete_all:
-                self.utils.click_template(complete_all)
-                self.utils.wait_for_match("ok_btn", timeout=10.0)
-                # sleep(6.5)
+                self.utils.click_template(complete_all, color_match=True, threshold=0.97, sleep_duration=5.0, confirm_click=True)
 
-            ok_btn = self.utils.check_match("ok_btn")
-            if ok_btn:
-                self.utils.click_template(ok_btn)
-                self.utils.wait_for_match("x_close_btn", timeout=10.0)
-                self.utils.wait_for_unmatch("missions_complete_all_btn", timeout=2.5)
-                # sleep(5)
+            self.utils.wait_for_match(["ok_btn", "card_new_dex", "tap_to_proceed_btn"], timeout=10.0)  # do we remove "x_close_btn" as it's always present during Mission screen?
+
+            # Handle ok_btn → x_close_btn dialog chain
+            if self.utils.check_match("ok_btn"):
+                self.utils.click_template("ok_btn", sleep_duration=2.5)
+                self.utils.wait_for_match("x_close_btn", timeout=5.0)
+
+            self.utils.wait_for_unmatch("missions_complete_all_btn", color_match=True, threshold=0.97, timeout=5.0)
 
             # Missions reward: single cards
             if self.utils.check_match("tap_to_proceed_btn"):
                 while True:
-                    self.click_tap_to_proceed()  # single card reward
-                    if self.utils.check_match(break_templates):
+                    self.click_tap_to_proceed()
+                    if self.utils.check_match(["ok_btn", "card_new_dex", "x_close_btn"]):
                         break
                 self._handle_card_new_dex()
-                for _ in range(2):
-                    ok_btn = self.utils.check_match("ok_btn")
-                    if ok_btn:
-                        self.utils.click_template(ok_btn, sleep_duration=3.0)
 
-            # Return if at the Missions screen and no complete_all
+            # Return if at the Missions screen with no more complete_all to click
             if self.utils.check_match("x_close_btn") \
-                and not self.utils.check_match("missions_complete_all_btn", color_match=True):
+                and not self.utils.check_match("missions_complete_all_btn", color_match=True, threshold=0.97):
                 logger.debug("Finished Missions complete all loop")
                 return True
 
@@ -904,7 +936,9 @@ class Bot:
                 logger.error("Unexpectedly at Home screen")
                 return False
 
-            sleep(1)
+        else:
+            logger.error("Missions complete_all loop exceeded max iterations")
+            return False
 
     def _missions_handle_complete_loop(self):
         """handle deck missions, themed_collections"""
@@ -1061,7 +1095,7 @@ class Bot:
                     return False
                 if not self.select_battle_difficulty():
                     return False
-            elif self.utils.wait_for_match(["battle_rules_screen_1", "battle_rules_screen"]):
+            elif self.utils.wait_for_match(["battle_rules_screen_1", "battle_rules_screen"], timeout=2.5):
                 logger.debug("Battle ended in Defeat, back at Battle Rules screen")
             else:
                 logger.warning("Failed to get to Drop Event screen")
@@ -1305,8 +1339,9 @@ class Bot:
         )
 
     def click_skip(self, sleep_duration: float = 1.0, confirm_click: bool = True):
+        templates = ["skip_btn", "skip_btn_1"]
         return self.utils.click_template(
-            "skip_btn",
+            templates,
             sleep_duration=sleep_duration,
             confirm_click=confirm_click,
         )

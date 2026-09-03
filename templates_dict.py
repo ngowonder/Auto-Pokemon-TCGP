@@ -112,6 +112,7 @@ TEMPLATES = {
     "next_btn": "images/next_btn.png",
     "ok_btn": "images/ok_btn.png",
     "skip_btn": "images/skip_btn.png",
+    "skip_btn_1": "images/skip_btn_1.png",
     "tap_and_hold_btn": "images/tap_and_hold_btn.png",
     "tap_to_proceed_btn": "images/tap_to_proceed_btn.png",
     "x_close_btn": "images/x_close_btn.png",
