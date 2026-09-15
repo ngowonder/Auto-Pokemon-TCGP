@@ -159,6 +159,7 @@ class Bot:
         return False
 
     def check_news(self):
+        # Appears after going to Home screen
         if self.utils.wait_for_match("news_window", timeout=1.5):
             logger.info("Fresh News available")
             self.click_x()
@@ -169,9 +170,9 @@ class Bot:
         if self.have_leveled_up:
             return True
 
-        if self.utils.check_match("home_btn_level_up", color_match=True):
+        if self.utils.check_match("home_btn_level_up", color_match=True, threshold=0.91):  # getting incorrect matches at 0.906
             self.have_leveled_up = True
-            logger.debug("Level Up available")
+            logger.info("Level Up available")
             return True
 
         self.have_leveled_up = False
@@ -179,9 +180,10 @@ class Bot:
 
     def _handle_level_up(self):
         if self.have_leveled_up:
-            if self.utils.wait_for_match("level_up", timeout=7.0):
+            logger.debug("Handling Level Up")
+            if self.utils.wait_for_match("level_up", threshold=0.7):
                 self.click_tap_to_proceed()
-                if self.utils.wait_for_match("level_up_unlocked", timeout=2.0):
+                if self.utils.wait_for_match("level_up_unlocked", threshold=0.7, timeout=2.0):
                     self.click_ok()
                 logger.info("Leveled up!")
                 return True
@@ -195,7 +197,7 @@ class Bot:
         self.utils.click_template("pokemon_tcgp_go_to_store_btn", confirm_click=True)
 
         # Google Play store
-        if self.utils.wait_for_match("google_play_screen", timeout=10.0):
+        if self.utils.wait_for_match("google_play_screen"):
             self.utils.click_template("google_play_update_btn", confirm_click=True)
             sleep(17.5)
 
@@ -240,7 +242,7 @@ class Bot:
         self.click_ok()
         self.utils.click_template("pokemon_tcgp_update_privacy_notice_btn")
         self.click_x()
-        if self.utils.wait_for_match("pokemon_tcgp_update_checked_agree_to", timeout=10.0):
+        if self.utils.wait_for_match("pokemon_tcgp_update_checked_agree_to"):
             self.click_ok()
         return True
 
@@ -252,7 +254,7 @@ class Bot:
         self.click_ok()
         self.utils.click_template("pokemon_tcgp_update_terms_of_use_btn")
         self.click_x()
-        if self.utils.wait_for_match("pokemon_tcgp_update_checked_agree_to", timeout=10.0):
+        if self.utils.wait_for_match("pokemon_tcgp_update_checked_agree_to"):
             self.click_ok()
         return True
 
@@ -264,13 +266,17 @@ class Bot:
             if start_screen:
                 logger.info("Starting Game")
                 self.utils.click_template(start_screen)
-                self.utils.wait_for_match(["home_btn_0", "home_btn_1"], timeout=10.0)
+                self.utils.wait_for_match(["home_btn_0", "home_btn_1"])
 
             bluestacks_enter_pokemon_tcgp(self)
             self.new_app_update()
             self.new_data_update()
             self.new_privacy_update()
             self.new_terms_of_use_update()
+
+            if self.utils.check_match("start_open_pack_error_window", threshold=0.7):
+                logger.info("The game closed during a pack opening, but you successfully obtained the cards")
+                self.click_ok()
 
             # Go to Home screen if start elsewhere in-game
             if self.utils.check_match("home_btn_0") \
@@ -282,7 +288,7 @@ class Bot:
             self.check_news()
 
             if self.check_if_home_screen():
-                logger.debug("Started at Home screen")
+                logger.info("Start Game: reached Home screen")
                 self.utils.wait_for_match("home_missions_btn_1", timeout=5.0)
                 self.check_gifts()
                 self.check_shop()
@@ -290,6 +296,7 @@ class Bot:
                 return False
 
             if self.check_booster_pack():
+                logger.info("Start Game: reached Booster Pack screen")
                 return True
 
             # Time-Based Adaptive Sleep
@@ -318,7 +325,6 @@ class Bot:
             return True
 
         self.check_level_up()
-        self.check_news()
 
         templates = ["home_btn_0", "home_btn_1", "home_btn_level_up"]
         timeout = 15.0
@@ -328,10 +334,11 @@ class Bot:
                 home = self.utils.check_match(template)
                 if home:
                     self.utils.click_template(home)
+                    if self.have_leveled_up:
+                        self._handle_level_up()
                     if self.utils.wait_for_match("home_btn_1", timeout=5.0):
                         sleep(4.5)
-                        if self.have_leveled_up:
-                            self._handle_level_up()
+                        self.check_news()
                         return True
         else:
             logger.error("Couldn't get to Home screen")
@@ -375,8 +382,10 @@ class Bot:
 
     def booster_packs(self):
         if self.booster_packs_available is False:
+            logger.debug("Booster Packs: none available, skipping")
             return
 
+        logger.info("Booster Packs")
         # Home screen
         if (self.booster_packs_available is None or self.booster_packs_available) \
             and self.check_if_home_screen():
@@ -389,8 +398,8 @@ class Bot:
 
         self.booster_packs_available = False
         self.go_to_home_screen()
-        self.utils.wait_for_match("home_missions_btn_1", timeout=5.0)
-        self.check_news()
+        self.utils.wait_for_match("home_missions_btn_1", timeout=5.0)  # most cases, this waits for home screen loading
+        logger.info("Booster Packs: completed")
         return
 
     def _open_booster_packs(self, booster_pack: str | None = None):
@@ -476,7 +485,7 @@ class Bot:
         return None, None
 
     def open_pack(self, exit_templates: list[str] = None):
-        if not self.utils.wait_for_match("pack_open_slice", timeout=2.5):
+        if not self.utils.wait_for_match("pack_open_slice"):
             logger.error("No pack found to slices open")
             return False
 
@@ -492,7 +501,7 @@ class Bot:
                 click_hold_duration=2.0,
             )
             self.click_next()
-            if not self.utils.wait_for_match("pack_open_slice", timeout=10.0):
+            if not self.utils.wait_for_match("pack_open_slice", timeout=1.0):
                 break
 
         post_open: list[str] = ["card_milestone", "card_new_dex", "ok_btn", "skip_btn", "skip_btn_1"]
@@ -507,7 +516,7 @@ class Bot:
                 handled_milestone = True
             if not handled_new_dex and self._handle_card_new_dex():
                 handled_new_dex = True
-            if self.utils.check_match(["skip_btn", "skip_btn_1"]):
+            if self.utils.check_match(["skip_btn", "skip_btn_1"], threshold=0.7):
                 self.click_skip()
             if self.utils.check_match("ok_btn"):
                 self.click_ok()  # claim shinedust
@@ -527,7 +536,7 @@ class Bot:
 
         attempt = 0
         stop_templates = ["tap_and_hold_btn", "next_btn"]
-        for i in range(60):
+        for i in range(10):
             if self.utils.check_match(stop_templates):
                 return True
 
@@ -546,7 +555,7 @@ class Bot:
         return
 
     def _handle_card_collection_milestone(self):
-        if not self.utils.wait_for_match("card_milestone", timeout=0.5):  # card collection milestone
+        if not self.utils.wait_for_match("card_milestone", threshold=0.9, timeout=0.5):  # card collection milestone
             return False
 
         logger.info("Card Collection Milestone reached!")
@@ -564,29 +573,12 @@ class Bot:
         self.click_next()
         return True
 
-    def _handle_card_mission_reward(self):
-        # NOTE TODO
-        """
-        if not self.utils.wait_for_match("", timeout=1.0):
-            return False
-        logger.info("Card mission reward collected")
-        self.click_skip()
-        """
-
-    def _handle_item_acquired(self):
-        # NOTE TODO
-        """
-        if not self.utils.wait_for_match("item_acquired_window", timeout=2.5):
-            return False
-        logger.info("Item Acquired")
-        self.click_ok()
-        """
-
     def gifts(self):
         if not self.gifts_available and self.go_to_home_screen():
             self.check_gifts()
 
         if not self.gifts_available:
+            logger.debug("Gifts: none available, skipping")
             return False
 
         logger.info("Gifts")
@@ -631,6 +623,7 @@ class Bot:
 
             if claim_count is not None and claimed_count != len(claim_count):
                 logger.info(f"Gifts: claimed {claimed_count} gift packs")
+            logger.info("Gifts: completed")
             return True
 
     def shop(self):
@@ -638,6 +631,7 @@ class Bot:
             self.check_shop()
 
         if not self.shop_daily_gifts_available:
+            logger.debug("Shop: none available, skipping")
             return False
 
         logger.info("Shop")
@@ -686,6 +680,7 @@ class Bot:
             if self.check_if_home_screen():
                 break
             sleep(0.5)
+        logger.info("Shop: completed")
         return True
 
     def _check_wonder_pick_sneak_peeks(self):
@@ -800,12 +795,12 @@ class Bot:
                     if self.utils.wait_for_match("wonder_pick_screen", timeout=1.0):
                         break
 
-        logger.debug("Wonder Pick completed")
+        logger.info("Wonder Pick: completed")
         self.go_to_home_screen()
         return
 
     def _wonder_pick_random_card(self):
-        cards = self.utils.wait_for_match("wonder_pick_pick_a_card_back", timeout=10.0, group_rectangles=True)
+        cards = self.utils.wait_for_match("wonder_pick_pick_a_card_back", group_rectangles=True)
         if len(cards) > 0:
             logger.debug(f"Found {len(cards)} card backs to randomly choose")
             # logger.debug(f"Cards are: {cards}")
@@ -813,7 +808,7 @@ class Bot:
             card_index = cards.index(card)
             logger.info(f"Wonder Pick: random card choice: #{card_index + 1} {card}")
             self.utils.click_template(card)
-            self.utils.wait_for_match("wonder_pick_results_screen", timeout=10.0)
+            self.utils.wait_for_match("wonder_pick_results_screen")
         else:
             logger.error("Failed to find card backs to randomly pick")
         return
@@ -842,6 +837,7 @@ class Bot:
             self.check_missions()
 
         if not self.missions_rewards_available:
+            logger.debug("Missions: none available, skipping")
             return False
 
         logger.info("Missions")
@@ -900,8 +896,7 @@ class Bot:
         # First complete_all_btn
         self.utils.click_template(complete_all, color_match=True, threshold=0.97, sleep_duration=5.0, confirm_click=True)
 
-        # self.utils.wait_for_unmatch("missions_complete_all_btn", color_match=True, threshold=0.97, timeout=2.5)  # NOTE test. don't think it really disappear or inactive
-        self.utils.wait_for_match(["ok_btn", "card_new_dex", "tap_to_proceed_btn", "missions_complete_all_btn"], color_match=True, threshold=0.97, timeout=10.0)
+        self.utils.wait_for_match(["ok_btn", "card_new_dex", "tap_to_proceed_btn", "missions_complete_all_btn"], color_match=True, threshold=0.97)
 
         for _ in range(10):
             # Click complete_all again if it reappeared (up to 2 clicks max observed)
@@ -909,7 +904,7 @@ class Bot:
             if complete_all:
                 self.utils.click_template(complete_all, color_match=True, threshold=0.97, sleep_duration=5.0, confirm_click=True)
 
-            self.utils.wait_for_match(["ok_btn", "card_new_dex", "tap_to_proceed_btn"], timeout=10.0)  # do we remove "x_close_btn" as it's always present during Mission screen?
+            self.utils.wait_for_match(["ok_btn", "card_new_dex", "tap_to_proceed_btn"])
 
             # Handle ok_btn → x_close_btn dialog chain
             if self.utils.check_match("ok_btn"):
@@ -971,7 +966,7 @@ class Bot:
                         self.click_ok()
 
                 # make sure we're at the missions screen before continuing
-                for _ in range(60):
+                for _ in range(20):
                     # x_close_btn for usual complete loop, back_arrow_btn for themed_collection
                     if self.utils.check_match(exit_templates):
                         break
@@ -1032,6 +1027,10 @@ class Bot:
         logger.info("Missions: Themed Collections")
         self.utils.click_template("missions_themed_collections_btn", confirm_click=True)
 
+        # Wait for themed collections window to appear before handling missions
+        self.utils.wait_for_match(["missions_expansions_missions_window", "missions_expansions_themed_collections_window", "missions_complete_all_btn", "missions_small_complete_btn"])
+
+        self._missions_handle_complete_all_loop()
         self._missions_handle_complete_loop()
 
         self.utils.click_template("back_arrow_btn", confirm_click=True)
@@ -1058,7 +1057,7 @@ class Bot:
 
     def battle(self):
         if not self.go_to_home_screen():
-            logger.error("Failed to go to start Battle")
+            logger.error("Battle: failed to reach Home screen")
             return False
 
         logger.info("Battle")
@@ -1078,6 +1077,8 @@ class Bot:
             logger.info(" | ".join(parts))
 
             logger.debug("Battle finished")
+        else:
+            logger.debug("Battle: no battles played")
         self.go_to_home_screen()
         return
 
@@ -1144,7 +1145,7 @@ class Bot:
                 solo_btn = self.utils.check_match(template)
                 if solo_btn:
                     logger.info("Battle: Solo Event available")
-                    self.utils.click_template(solo_btn)
+                    self.utils.click_template(solo_btn, confirm_click=True)
 
                     # Battle Solo screen
                     if not self.utils.wait_for_match("battle_solo_screen", timeout=0.5):
@@ -1251,7 +1252,7 @@ class Bot:
         return False
 
     def _handle_battle_loop(self):
-        if not self.utils.wait_for_match(["battle_rules_screen_1", "battle_rules_screen"], timeout=10.0):
+        if not self.utils.wait_for_match(["battle_rules_screen_1", "battle_rules_screen"]):
             logger.error("Failed to find Battle Rules screen")
             return False
 
@@ -1344,6 +1345,7 @@ class Bot:
             templates,
             sleep_duration=sleep_duration,
             confirm_click=confirm_click,
+            threshold=0.7
         )
 
     def click_x(self, sleep_duration: float = 1.0, confirm_click: bool = True):
@@ -1394,7 +1396,7 @@ def initialize_hwnd():
         logger.debug(f"Found program window: {HWND}")
         return True
 
-    logger.error("hwnd window not found")
+    logger.debug("hwnd window not found")
     HWND = None
     return False
 
@@ -1473,7 +1475,7 @@ def exit_bluestacks(Bot=None):
         sys.exit()
 
     win32gui.SetForegroundWindow(HWND)
-    x = Bot.utils.wait_for_match("bluestacks_x_btn", timeout=10.0)
+    x = Bot.utils.wait_for_match("bluestacks_x_btn")
     if not x:
         logger.warning("Failed to find BlueStacks X button")
         return

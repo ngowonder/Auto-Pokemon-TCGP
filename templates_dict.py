@@ -89,6 +89,7 @@ TEMPLATES = {
     "google_play_screen": "images/google_play_screen.png",
     "google_play_update_btn": "images/google_play_update_btn.png",
     "google_play_play_btn": "images/google_play_play_btn.png",
+    "start_open_pack_error_window": "images/start_open_pack_error_window.png",
  
     "home_battle_btn_0": "images/home_battle_btn_0.png",
     "home_battle_btn_0_dot": "images/home_battle_btn_0_dot.png",
