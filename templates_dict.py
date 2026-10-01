@@ -29,7 +29,8 @@ BOOSTER_PACK_TO_TEMPLATES = {
         "paradox drive": "booster_pack_paradox_drive",
         "everyday wonders": "booster_pack_everyday_wonders",
         "ruler of the skies": "booster_pack_ruler_of_the_skies",
-        "team_rockets_ambition": "booster_pack_team_rockets_ambition",
+        "team rockets ambition": "booster_pack_team_rockets_ambition",
+        "deluxe pack mega": "booster_pack_deluxe_pack_mega",
     }
 }
 
@@ -65,6 +66,7 @@ TEMPLATES = {
     "booster_pack_everyday_wonders": "images/booster_pack_everyday_wonders.png",
     "booster_pack_ruler_of_the_skies": "images/booster_pack_ruler_of_the_skies.png",
     "booster_pack_team_rockets_ambition": "images/booster_pack_team_rockets_ambition.png",
+    "booster_pack_deluxe_pack_mega": "images/booster_pack_deluxe_pack_mega.png",
 
     "card_milestone": "images/card_milestone.png",
     "card_new_dex": "images/card_new_dex.png",
@@ -79,7 +81,7 @@ TEMPLATES = {
 
     "start_screen": "images/start_screen.png",
     "pokemon_tcgp_update_app": "images/pokemon_tcgp_update_app.png",
-    "pokemon_tcgp_update_data": "images/pokemon_tcgp_update_data.jpg",
+    "pokemon_tcgp_update_data": "images/pokemon_tcgp_update_data.png",
     "pokemon_tcgp_update_privacy_notice": "images/pokemon_tcgp_update_privacy_notice.png",
     "pokemon_tcgp_update_privacy_notice_btn": "images/pokemon_tcgp_update_privacy_notice_btn.png",
     "pokemon_tcgp_update_terms_of_use": "images/pokemon_tcgp_update_terms_of_use.png",
