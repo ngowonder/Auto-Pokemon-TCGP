@@ -259,6 +259,12 @@ class Bot:
         return True
 
     def start_game(self):
+        new_app_update_handled = False
+        new_data_update_handled = False
+        new_privacy_update_handled = False
+        new_terms_of_use_handled = False
+        clicked_start_screen = False
+
         timeout = 180.0
         start_time = monotonic()
         while monotonic() - start_time < timeout:
@@ -266,13 +272,26 @@ class Bot:
             if start_screen:
                 logger.info("Starting Game")
                 self.utils.click_template(start_screen)
+                clicked_start_screen = True
                 self.utils.wait_for_match(["home_btn_0", "home_btn_1"])
 
             bluestacks_enter_pokemon_tcgp(self)
-            self.new_app_update()
-            self.new_data_update()
-            self.new_privacy_update()
-            self.new_terms_of_use_update()
+
+            if not new_app_update_handled:
+                self.new_app_update()
+                new_app_update_handled = True
+
+            if not new_data_update_handled:
+                self.new_data_update()
+                new_data_update_handled = True
+
+            if not new_privacy_update_handled:
+                self.new_privacy_update()
+                new_privacy_update_handled = True
+
+            if not new_terms_of_use_handled:
+                self.new_terms_of_use_update()
+                new_terms_of_use_handled = True
 
             if self.utils.check_match("start_open_pack_error_window", threshold=0.7):
                 logger.info("The game closed during a pack opening, but you successfully obtained the cards")
@@ -300,13 +319,14 @@ class Bot:
                 return True
 
             # Time-Based Adaptive Sleep
-            elapsed = monotonic() - start_time
-            if elapsed < 15:
-                sleep(5)
-            elif elapsed < 25:
-                sleep(2)
-            else:
-                sleep(1)
+            if not clicked_start_screen:
+                elapsed = monotonic() - start_time
+                if elapsed < 15:
+                    sleep(5)
+                elif elapsed < 25:
+                    sleep(2)
+                else:
+                    sleep(1)
         else:
             logger.error("Failed to Start Game")
             if ENABLE_EXIT_APP:
@@ -325,6 +345,7 @@ class Bot:
             return True
 
         self.check_level_up()
+        self.check_news()
 
         templates = ["home_btn_0", "home_btn_1", "home_btn_level_up"]
         timeout = 15.0
@@ -425,7 +446,7 @@ class Bot:
                     break
 
         self.utils.click_template("pack_open_btn", confirm_click=True)
-        self.click_skip()
+        self.click_skip(timeout=30.0)
         if not self.open_pack(exit_templates="pack_select_other_booster_packs_btn"):
             logger.error(f"Failed to open booster pack '{booster_pack}'")
             return False
@@ -589,40 +610,48 @@ class Bot:
         if self.utils.wait_for_match("gifts_screen", timeout=15.0):
             sleep(1.0)
 
-            claim_count = self.utils.wait_for_match("gifts_claim_btn", color_match=False, threshold=0.95)
-            if claim_count is not None:
-                if len(claim_count) >= 3:
-                    logger.info(f"Gifts: at least {len(claim_count)} gifts to claim")
+            initial_claim_count  = self.utils.wait_for_match("gifts_claim_btn", color_match=False, threshold=0.95)
+            if initial_claim_count  is not None:
+                count = len(initial_claim_count)
+                if count >= 3:
+                    logger.info(f"Gifts: at least {count} gift(s) to claim")
                 else:
-                    logger.info(f"Gifts: {len(claim_count)} gifts to claim")
-
-            claim_all = self.utils.wait_for_match("gifts_claim_all_btn", timeout=1.0, threshold=0.98, color_match=True)
-            if claim_all:
-                self.utils.click_template("gifts_claim_all_btn", confirm_click=True)
-                # Fail-safe when claim_all click didn't register / OK pops up
-                if self.utils.wait_for_match("ok_btn", timeout=1.5):
-                    self.click_ok()
-                    self.open_pack(exit_templates="gifts_screen")
-                self.utils.wait_for_match("gifts_screen")
-                self.utils.wait_for_unmatch("gifts_claim_all_btn", timeout=5.0, threshold=0.98, color_match=True)
+                    logger.info(f"Gifts: {count} gift(s) to claim")
 
             claimed_count = 0
-            while True:
-                claim_btn = self.utils.check_match("gifts_claim_btn")
-                if not claim_btn:
-                    break
-                self.utils.click_template("gifts_claim_btn", confirm_click=True)
-                self.click_ok()
-                self.open_pack(exit_templates="gifts_screen")
-                claimed_count += 1
+            claim_all = self.utils.wait_for_match("gifts_claim_all_btn", timeout=1.0, threshold=0.98, color_match=True)
+            if claim_all:
+                claimed_count = len(initial_claim_count) if initial_claim_count is not None else 0
+                self.utils.click_template(claim_all, confirm_click=True)
+                if self.utils.wait_for_match("ok_btn", timeout=1.5):
+                    self.click_ok()
+                    if self.utils.wait_for_match("pack_open_slice", timeout=5.0):
+                        self.open_pack(exit_templates="gifts_screen")
+                    else:
+                        logger.error("Gifts: Expecting 'pack_open_slice' during 'gifts_claim_all_btn', and failed")
                 self.utils.wait_for_match("gifts_screen")  # wait for gifts_screen before next action
+                self.utils.wait_for_unmatch("gifts_claim_all_btn", timeout=5.0, threshold=0.98, color_match=True)
+
+            if self.utils.wait_for_match("gifts_claim_btn", timeout=0.5):
+                while True:
+                    claim_btn = self.utils.wait_for_match("gifts_claim_btn", timeout=1.0)
+                    if not claim_btn:
+                        break
+                    self.utils.click_template("gifts_claim_btn", confirm_click=True)
+                    self.click_ok()
+                    if self.utils.wait_for_match("pack_open_slice", timeout=5.0):
+                        self.open_pack(exit_templates="gifts_screen")
+                    else:
+                        logger.error("Gifts: Expecting 'pack_open_slice' during 'gifts_claim_btn', and failed")
+                    claimed_count += 1
+                    self.utils.wait_for_match("gifts_screen")  # wait for gifts_screen before next action
 
             if self.utils.check_match("gifts_no_claimable_items_screen"):
                 self.gifts_available = False
-                self.click_x()
+                self.click_x()  # go to Home screen
 
-            if claim_count is not None and claimed_count != len(claim_count):
-                logger.info(f"Gifts: claimed {claimed_count} gift packs")
+            if claimed_count > 0:
+                logger.info(f"Gifts: claimed at least {claimed_count} gifts")
             logger.info("Gifts: completed")
             return True
 
@@ -741,7 +770,7 @@ class Bot:
                 self.utils.mouse_scroll(matched_pick, y_offset=-220)
                 continue
 
-            self.utils.click_template(pick, confirm_click=True)
+            self.utils.click_template(matched_pick)
 
             if pick in SPECIAL_PICKS and self.utils.check_match("wonder_pick_no_stamina"):
                 logger.info(f"Wonder Pick: no stamina for '{pick}'")
@@ -1339,10 +1368,11 @@ class Bot:
             confirm_click=confirm_click,
         )
 
-    def click_skip(self, sleep_duration: float = 1.0, confirm_click: bool = True):
+    def click_skip(self, timeout: float = 10.0, sleep_duration: float = 1.0, confirm_click: bool = True):
         templates = ["skip_btn", "skip_btn_1"]
         return self.utils.click_template(
             templates,
+            timeout=timeout,
             sleep_duration=sleep_duration,
             confirm_click=confirm_click,
             threshold=0.7
@@ -1448,7 +1478,7 @@ def launch_game():
 
 
 def restart_script():
-    logger.info("Restarting py script")
+    logger.debug("Restarting py script")
     python = sys.executable
     script = Path(__file__).resolve()
     subprocess.run([python, script] + sys.argv[1:])  # run new py
@@ -1459,7 +1489,7 @@ def bluestacks_enter_pokemon_tcgp(Bot=None):
     """Enter Pokemon TCGP from BlueStacks homescreen"""
     if Bot is None:
         # raise # NOTE may need to raise error
-        logger.error("Failed to find Bot instance; may")
+        logger.error("Failed to find Bot instance")
 
     pokemon_tcgp_icon = Bot.utils.check_match("bluestacks_pokemon_tcgp_icon")
     if pokemon_tcgp_icon:
@@ -1475,7 +1505,7 @@ def exit_bluestacks(Bot=None):
         sys.exit()
 
     win32gui.SetForegroundWindow(HWND)
-    x = Bot.utils.wait_for_match("bluestacks_x_btn")
+    x = Bot.utils.wait_for_match("bluestacks_x_btn", color_match=True)
     if not x:
         logger.warning("Failed to find BlueStacks X button")
         return
