@@ -195,12 +195,10 @@ class Bot:
 
         logger.info("New Pokemon TCGP app version - Updating...")
         self.utils.click_template("pokemon_tcgp_go_to_store_btn", confirm_click=True)
-
         # Google Play store
         if self.utils.wait_for_match("google_play_screen"):
             self.utils.click_template("google_play_update_btn", confirm_click=True)
             sleep(17.5)
-
             play_btn = self.utils.wait_for_match("google_play_play_btn", timeout=120.0)
             if play_btn:
                 self.utils.move_to_click(play_btn)
@@ -215,24 +213,25 @@ class Bot:
                 sys.exit()
 
     def new_data_update(self):
-        if self.utils.check_match("pokemon_tcgp_update_data"):
-            logger.info("New Pokemon TCGP data update - Downloading...")
-            self.click_ok()
-            sleep(17.5)
+        if not self.utils.check_match("pokemon_tcgp_update_data"):
+            return False
 
-            if self.utils.wait_for_match("start_screen", timeout=60.0):
-                logger.info("New Pokemon TCGP data downloaded")
-                return
-            if self.go_to_home_screen():
-                logger.info("New Pokemon TCGP data downloaded")
-                return
+        logger.info("New Pokemon TCGP data update - Downloading...")
+        self.click_ok()
+        sleep(17.5)
+        if self.utils.wait_for_match("start_screen", timeout=60.0):
+            logger.info("New Pokemon TCGP data downloaded")
+            return True
+        if self.go_to_home_screen():
+            logger.info("New Pokemon TCGP data downloaded")
+            return True
 
-            logger.error("Failed to download Pokemon TCGP data")
-            if ENABLE_EXIT_APP:
-                exit_bluestacks(self)
-            else:
-                logger.info("Quitting Auto Pokemon TCGP")
-                sys.exit()
+        logger.error("Failed to download Pokemon TCGP data")
+        if ENABLE_EXIT_APP:
+            exit_bluestacks(self)
+        else:
+            logger.info("Quitting Auto Pokemon TCGP")
+            sys.exit()
 
     def new_privacy_update(self):
         if not self.utils.check_match("pokemon_tcgp_update_privacy_notice"):
@@ -278,20 +277,20 @@ class Bot:
             bluestacks_enter_pokemon_tcgp(self)
 
             if not new_app_update_handled:
-                self.new_app_update()
-                new_app_update_handled = True
+                if self.new_app_update():
+                    new_app_update_handled = True
 
             if not new_data_update_handled:
-                self.new_data_update()
-                new_data_update_handled = True
+                if self.new_data_update():
+                    new_data_update_handled = True
 
             if not new_privacy_update_handled:
-                self.new_privacy_update()
-                new_privacy_update_handled = True
+                if self.new_privacy_update():
+                    new_privacy_update_handled = True
 
             if not new_terms_of_use_handled:
-                self.new_terms_of_use_update()
-                new_terms_of_use_handled = True
+                if self.new_terms_of_use_update():
+                    new_terms_of_use_handled = True
 
             if self.utils.check_match("start_open_pack_error_window", threshold=0.7):
                 logger.info("The game closed during a pack opening, but you successfully obtained the cards")
@@ -507,32 +506,42 @@ class Bot:
 
     def open_pack(self, exit_templates: list[str] = None):
         if not self.utils.wait_for_match("pack_open_slice"):
-            logger.error("No pack found to slices open")
+            logger.debug("No pack found to slices open")
             return False
 
         logger.debug("Starting to open pack")
 
-        # while loop for multiple card packs
-        for _ in range(10):
-            self._open_pack_slice()
-            self.utils.click_template_nonstop_until(
-                target_template="tap_and_hold_btn",
-                stop_templates="next_btn",
-                click_hold=True,
-                click_hold_duration=2.0,
-            )
-            self.click_next()
-            if not self.utils.wait_for_match("pack_open_slice", timeout=1.0):
+        # loop for multiple card packs
+        open_pack_count = 0
+        open_pack_stop: list[str] = ["card_milestone", "card_new_dex", "ok_btn", "skip_btn", "skip_btn_1"]
+        for i in range(10):
+            logger.debug(f"Open pack loop: {i}")
+            if self.utils.wait_for_match("pack_open_slice", timeout=1.0):
+                self._open_pack_slice()
+                open_pack_count += 1
+                logger.debug(f"Opened pack #{open_pack_count}")
+                self.utils.click_template_nonstop_until(
+                    target_template="tap_and_hold_btn",
+                    stop_templates="next_btn",
+                    click_hold=True,
+                    click_hold_duration=2.0,
+                )
+                self.click_next()
+            else:
+                logger.debug(f"Open Pack loop #{i}: no pack slice found")
+
+            if self.utils.check_match(open_pack_stop):
                 break
 
-        post_open: list[str] = ["card_milestone", "card_new_dex", "ok_btn", "skip_btn", "skip_btn_1"]
-        if not self.utils.wait_for_match(post_open, timeout=7.5):
-            logger.error("Failed to find post-open screens after pack opened")
-            return False
+            sleep(1)
+        logger.info(f"Pack opening complete: {open_pack_count} pack(s) opened")
 
+        # Post open
         handled_milestone = False
         handled_new_dex = False
-        for _ in range(10):
+        timeout = 30.0
+        start = monotonic()
+        while monotonic() - start < timeout:
             if not handled_milestone and self._handle_card_collection_milestone():
                 handled_milestone = True
             if not handled_new_dex and self._handle_card_new_dex():
@@ -569,7 +578,7 @@ class Bot:
                 boxes = [Match(leftmost.x, leftmost.y, 0, 0)]
                 attempt += 1
                 logger.debug(f"Slicing pack attempt #{attempt} at position: {leftmost.x}, {leftmost.y}")
-                self.utils.mouse_scroll(boxes, x_offset=500, duration=0.5, drag=True)
+                self.utils.mouse_scroll(boxes, x_offset=480, duration=0.5, drag=True)
             sleep(0.5)
         else:
             logger.error("Failed to slice open pack")
@@ -607,8 +616,8 @@ class Bot:
             self.utils.click_template("home_gifts_btn", confirm_click=True)
 
         # Gifts screen
-        if self.utils.wait_for_match("gifts_screen", timeout=15.0):
-            sleep(1.0)
+        if self.utils.wait_for_match("gifts_screen"):
+            sleep(1)
 
             initial_claim_count  = self.utils.wait_for_match("gifts_claim_btn", color_match=False, threshold=0.95)
             if initial_claim_count  is not None:
@@ -617,18 +626,16 @@ class Bot:
                     logger.info(f"Gifts: at least {count} gift(s) to claim")
                 else:
                     logger.info(f"Gifts: {count} gift(s) to claim")
-
             claimed_count = 0
+
             claim_all = self.utils.wait_for_match("gifts_claim_all_btn", timeout=1.0, threshold=0.98, color_match=True)
             if claim_all:
                 claimed_count = len(initial_claim_count) if initial_claim_count is not None else 0
                 self.utils.click_template(claim_all, confirm_click=True)
-                if self.utils.wait_for_match("ok_btn", timeout=1.5):
+                if self.utils.wait_for_match("ok_btn"):
                     self.click_ok()
-                    if self.utils.wait_for_match("pack_open_slice", timeout=5.0):
-                        self.open_pack(exit_templates="gifts_screen")
-                    else:
-                        logger.error("Gifts: Expecting 'pack_open_slice' during 'gifts_claim_all_btn', and failed")
+
+                    self.open_pack(exit_templates="gifts_screen")
                 self.utils.wait_for_match("gifts_screen")  # wait for gifts_screen before next action
                 self.utils.wait_for_unmatch("gifts_claim_all_btn", timeout=5.0, threshold=0.98, color_match=True)
 
@@ -639,10 +646,7 @@ class Bot:
                         break
                     self.utils.click_template("gifts_claim_btn", confirm_click=True)
                     self.click_ok()
-                    if self.utils.wait_for_match("pack_open_slice", timeout=5.0):
-                        self.open_pack(exit_templates="gifts_screen")
-                    else:
-                        logger.error("Gifts: Expecting 'pack_open_slice' during 'gifts_claim_btn', and failed")
+                    self.open_pack(exit_templates="gifts_screen")
                     claimed_count += 1
                     self.utils.wait_for_match("gifts_screen")  # wait for gifts_screen before next action
 
@@ -677,12 +681,12 @@ class Bot:
         logger.info("Shop's Daily Gifts claimed")
         self.click_ok()
 
-        # Option to buy monthly hourglasses (2nd and 28th of month)
+        # Option to buy monthly hourglasses (2nd, 14th, 28th of month)
         if ENABLE_SHOP_BUY_MONTHLY_HOURGLASSES:
             from datetime import datetime
             from zoneinfo import ZoneInfo
             JST = ZoneInfo("Asia/Tokyo")
-            is_monthly_day = datetime.now(JST).day in (2, 28)
+            is_monthly_day = datetime.now(JST).day in (2, 14, 28)
 
             if is_monthly_day:
                 logger.info("Shop: checking for monthly hourglasses")
@@ -690,18 +694,20 @@ class Bot:
 
                 templates = ["shop_pack_hourglass", "shop_wonder_hourglass"]
                 for template in templates:
-                    hourglass = self.utils.check_match(template, color_match=True)
-                    if hourglass:
-                        for i in hourglass:
-                            self.utils.click_template(i, confirm_click=True)
+                    hourglass = self.utils.check_match(template, color_match=True, threshold=0.95)
+                    if not hourglass:
+                        continue
 
-                            max_qty_btn = self.utils.check_match("shop_max_qty_btn_1", color_match=True)
-                            if max_qty_btn:
-                                self.utils.click_template(max_qty_btn)
+                    for i in hourglass:
+                        self.utils.click_template(i, confirm_click=True)
 
-                            self.click_ok()  # Buy
-                            self.click_ok(confirm_click=True)  # Received
-                logger.debug("Shop: Monthly Hourglasses purchased")
+                        max_qty_btn = self.utils.check_match("shop_max_qty_btn_1", color_match=True)
+                        if max_qty_btn:
+                            self.utils.click_template(max_qty_btn)
+
+                        self.click_ok()  # Buy
+                        self.click_ok(confirm_click=True)  # Received
+            logger.debug("Shop: Monthly Hourglasses purchased")
 
         self.click_x(sleep_duration=3.0)
 
@@ -752,15 +758,21 @@ class Bot:
             self.utils.click_template("home_wonder_pick_btn", confirm_click=True)
 
         if not self.utils.wait_for_match("wonder_pick_screen", timeout=15.0):
-            logger.error("Failed to get to Wonder Pick screen. Returning to Home...")
+            logger.error("Failed to get to Wonder Pick screen. Returning Home")
             self.go_to_home_screen()
             return
 
-        # Wonder Pick screen
+        # Wonder Picks
         WONDER_PICKS = ["wonder_pick_chansey", "wonder_pick_rare", "wonder_pick_bonus"]
         SPECIAL_PICKS = ["wonder_pick_chansey", "wonder_pick_rare"]
+        # wait for WONDER_PICKS at "wonder_pick_screen"
+        if not self.utils.wait_for_match(WONDER_PICKS, timeout=2.5):
+            logger.info("No Wonder Picks found. Returning Home")
+            self.go_to_home_screen()
+            return
+
         for pick in WONDER_PICKS:
-            matched_pick = self.utils.wait_for_match(pick, timeout=0.75)
+            matched_pick = self.utils.wait_for_match(pick, timeout=0.5)
             if not matched_pick:
                 logger.debug(f"Wonder Pick '{pick}' not available")
                 continue
@@ -1117,18 +1129,25 @@ class Bot:
 
         logger.info("Battle: Solo Event")
 
+        battle_result = None
         while True:
-            if self.utils.wait_for_match("battle_solo_drop_event_screen", timeout=5.0):
+            # Defeat/Tie path
+            if battle_result is not None and battle_result is False:
+                if not self.utils.wait_for_match(["battle_rules_screen_1", "battle_rules_screen"], timeout=15.0):
+                    logger.error("Battle: Failed to find Battle Rules screen")
+                    return False
+                logger.debug("Battle ended in Defeat, back at Battle Rules screen")
+            # First entry or victory repeat
+            elif self.utils.wait_for_match("battle_solo_drop_event_screen", timeout=5.0):
                 sleep(1)
-                if not self.utils.check_match("battle_solo_event_stamina"):
+                if not self.utils.wait_for_match("battle_solo_event_stamina", timeout=1.0):
                     logger.info("Battle: Solo Event: no stamina available")
                     return False
                 if not self.select_battle_difficulty():
+                    logger.error("Failed to select Battle difficulty")
                     return False
-            elif self.utils.wait_for_match(["battle_rules_screen_1", "battle_rules_screen"], timeout=2.5):
-                logger.debug("Battle ended in Defeat, back at Battle Rules screen")
             else:
-                logger.warning("Failed to get to Drop Event screen")
+                logger.error("Failed to get to Drop Event screen")
                 return False
 
             self.battle_count += 1
@@ -1139,13 +1158,15 @@ class Bot:
 
             # Wait for Battle screen / handle New Battle Unlocked
             stop_templates = ["battle_solo_drop_event_screen", "back_arrow_btn"]
-            for _ in range(15):
+            timeout = 15.0
+            start = monotonic()
+            while monotonic() - start < timeout:
                 if self.utils.check_match("battle_end_victory_new_battle_unlocked"):
                     logger.info("Battle: New Battle Unlocked")
                     self.click_ok()
                 if self.utils.check_match(stop_templates):
                     break
-                sleep(1.0)
+                sleep(1)
 
             if (battle_result and ENABLE_BATTLE_VICTORY_REPEAT) \
                 or (not battle_result and ENABLE_BATTLE_DEFEAT_REDO):
