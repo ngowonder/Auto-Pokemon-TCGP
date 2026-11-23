@@ -510,13 +510,20 @@ class Bot:
             return False
 
         logger.debug("Starting to open pack")
+        """
+        Two loops. There is an open_pack loop, and a separate post-open loop.
+        The open_pack loop can handle/open different sets of packs.
+        """
 
         # loop for multiple card packs
         open_pack_count = 0
         open_pack_stop: list[str] = ["card_milestone", "card_new_dex", "ok_btn", "skip_btn", "skip_btn_1"]
+        if exit_templates:
+            templates = exit_templates if isinstance(exit_templates, list) else [exit_templates]
+            open_pack_stop.extend(templates)
         for i in range(10):
-            logger.debug(f"Open pack loop: {i}")
-            if self.utils.wait_for_match("pack_open_slice", timeout=1.0):
+            logger.debug(f"Open Pack loop #{i}")
+            if self.utils.wait_for_match("pack_open_slice", timeout=2.5):
                 self._open_pack_slice()
                 open_pack_count += 1
                 logger.debug(f"Opened pack #{open_pack_count}")
@@ -530,34 +537,35 @@ class Bot:
             else:
                 logger.debug(f"Open Pack loop #{i}: no pack slice found")
 
-            if self.utils.check_match(open_pack_stop):
+            sleep(2)
+            post_open = self.utils.check_match(open_pack_stop)
+            if post_open:
+                logger.debug(f"Post-open found: {post_open[0].name}. Break open-pack loop.")
                 break
-
-            sleep(1)
         logger.info(f"Pack opening complete: {open_pack_count} pack(s) opened")
 
         # Post open
         handled_milestone = False
-        handled_new_dex = False
+        handled_new_dex_count = 0
         timeout = 30.0
         start = monotonic()
         while monotonic() - start < timeout:
             if not handled_milestone and self._handle_card_collection_milestone():
                 handled_milestone = True
-            if not handled_new_dex and self._handle_card_new_dex():
-                handled_new_dex = True
+            if handled_new_dex_count < 2 and self._handle_card_new_dex():
+                handled_new_dex_count += 1
+                logger.info(f"New Card Dex #{handled_new_dex_count}")
             if self.utils.check_match(["skip_btn", "skip_btn_1"], threshold=0.7):
                 self.click_skip()
             if self.utils.check_match("ok_btn"):
                 self.click_ok()  # claim shinedust
 
+            sleep(1)
             # for booster_packs() and gifts() screens
             if exit_templates and self.utils.check_match(exit_templates):
                 return True
-
-            sleep(1)
         else:
-            logger.error("Unexpected error in open_pack post-open")
+            logger.error("Unexpected error in `open_pack()` post-open loop")
             return False
 
     def _open_pack_slice(self):
